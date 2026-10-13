@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.DS_Store
+.env
+out/
+
+# raw phone photos never get committed (ingest_images.py compresses them into raw/)
+inbox/*.[jJ][pP][gG]
+inbox/*.[jJ][pP][eE][gG]
+inbox/*.[pP][nN][gG]
+inbox/*.[hH][eE][iI][cC]
+inbox/*.[wW][eE][bB][pP]
+
+# RUNWAY: the deploy hook is a secret; it lives only in this local file
+data/runway/deploy-hook.local

@@ -1,0 +1,138 @@
+{
+ "source": "user",
+ "updated": "2026-01-01",
+ "note": "Every render reads this file. scripts/disclosure_lint.py enforces it; nothing ships with a lint failure. Edit the terms to match your situation.",
+ "channels": {
+  "internal": {
+   "description": "The BragDoc itself (render.py bragdoc). Only you see it. Everything allowed: full project detail, security specifics, all contacts, internal figures.",
+   "contacts": [
+    "phone",
+    "email_personal",
+    "email_domain",
+    "linkedin",
+    "github",
+    "medium",
+    "website"
+   ],
+   "summary_field": null,
+   "checks": [
+    "always_banned",
+    "names"
+   ],
+   "names": {
+    "form": "short"
+   }
+  },
+  "resume": {
+   "description": "Every resume (render.py resume-extensive and any resume built from the BragDoc).",
+   "contacts": [
+    "phone",
+    "email_personal",
+    "linkedin",
+    "github",
+    "medium",
+    "website"
+   ],
+   "summary_field": "resume_summary",
+   "remove": [
+    "internal system/service/table names",
+    "proprietary platform internals",
+    "exploitable security specifics",
+    "anything in an entry's public_constraints (e.g. no security details tied to a named client)"
+   ],
+   "allowed": [
+    "client/employer names",
+    "project/app names",
+    "generic vulnerability classes",
+    "engineering metrics (latency, throughput, test counts, coverage)"
+   ],
+   "cost_figures": "relative_only",
+   "checks": [
+    "always_banned",
+    "current_employer_internal_names",
+    "public_constraints",
+    "absolute_costs",
+    "contacts",
+    "names"
+   ],
+   "contact_note": "Resumes always use the personal email, even once email_domain exists.",
+   "names": {
+    "form": "formal",
+    "require": true
+   }
+  },
+  "public": {
+   "description": "A personal website (not included), including its downloadable resume (render.py public-resume).",
+   "contacts": [
+    "email_domain",
+    "linkedin",
+    "github",
+    "medium",
+    "website"
+   ],
+   "summary_field": "public_summary",
+   "remove": [
+    "everything the resume channel removes",
+    "vulnerability class names (keep the achievement: 'hardened external document fetching', not the class name)",
+    "all employer money figures, absolute or relative"
+   ],
+   "cost_figures": "none",
+   "checks": [
+    "always_banned",
+    "current_employer_internal_names",
+    "public_constraints",
+    "vulnerability_classes",
+    "any_costs",
+    "contacts",
+    "names"
+   ],
+   "contact_note": "The domain email is for the public channel only; never phone, never personal email.",
+   "allowed": [
+    "client/employer names",
+    "project/app names"
+   ],
+   "names": {
+    "form": "public_full",
+    "block_formal": true
+   }
+  }
+ },
+ "public_constraints": "Per entry: entries.jsonl -> public_constraints. Applies to the resume and public channels.",
+ "terms": {
+  "always_banned": [],
+  "current_employer_internal_names": [
+   "\\bINTERNAL_CODENAME\\b"
+  ],
+  "vulnerability_classes": [
+   "(?i)\\bSSRF\\b",
+   "(?i)server[- ]side request forgery",
+   "(?i)\\bXSS\\b",
+   "(?i)cross[- ]site scripting",
+   "(?i)\\bIDOR\\b",
+   "(?i)insecure direct object reference",
+   "(?i)\\bCSRF\\b",
+   "(?i)cross[- ]site request forgery",
+   "(?i)SQL injection",
+   "(?i)\\bSQLi\\b",
+   "(?i)\\bRCE\\b",
+   "(?i)remote code execution",
+   "(?i)\\bXXE\\b",
+   "(?i)path traversal",
+   "(?i)open redirect",
+   "(?i)prompt[- ]injection",
+   "(?i)privilege escalation",
+   "(?i)\\bOWASP\\b",
+   "(?i)\\bDDoS\\b"
+  ]
+ },
+ "cost_patterns": {
+  "absolute": "(?:₹|\\bRs\\.?|\\bINR\\b|\\$|\\bUSD\\b|€|£)\\s?\\d[\\d,]*(?:\\.\\d+)?|\\d[\\d,]*(?:\\.\\d+)?\\s?(?:INR|rupees|USD|dollars|EUR|euros)\\b",
+  "cost_words": "\\b(?:costs?|spend(?:ing)?|bills?|billing|budgets?|pric(?:e|es|ing))\\b|₹|€|£|\\bINR\\b|\\bUSD\\b|\\$(?=\\s?\\d)"
+ },
+ "notes": [
+  "Term lists are regexes. Acronyms and names are case-sensitive; phrases carry an inline (?i) flag.",
+  "always_banned: terms that may appear nowhere in data/ or any output (e.g. an employer you must not mention). validate.py enforces it.",
+  "current_employer_internal_names: internal identifiers of your current employer (codenames, flags, service names). Replace the placeholder.",
+  "names: each channel shows one form of profile.json names. A wrong casing of names.formal is an error everywhere; public blocks the formal form; a whole resume must contain it exactly. An all-caps design is CSS text-transform, never changed text."
+ ]
+}

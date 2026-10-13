@@ -1,0 +1,10 @@
+[
+ {
+  "employer": "Example Corp",
+  "role": "Backend Engineer",
+  "start": "2023-06",
+  "end": null,
+  "source": "user",
+  "context": "Team of 6 engineers"
+ }
+]

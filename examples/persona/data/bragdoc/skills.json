@@ -1,0 +1,22 @@
+[
+ {
+  "skill": "PostgreSQL",
+  "group": "Databases & Data",
+  "level": "proficient",
+  "evidence_entry_ids": [
+   "e-0001"
+  ],
+  "evidence_staging_ids": [],
+  "source": "user"
+ },
+ {
+  "skill": "Python",
+  "group": "Languages",
+  "level": null,
+  "evidence_entry_ids": [
+   "e-0001"
+  ],
+  "evidence_staging_ids": [],
+  "source": "user"
+ }
+]

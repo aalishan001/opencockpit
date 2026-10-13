@@ -1,0 +1,34 @@
+[
+ {
+  "id": "engine_oil",
+  "name": "Engine oil",
+  "action": "replace",
+  "interval_km": 3000,
+  "source": "raw/chassis/example-150-manual.pdf p.12",
+  "notes": "R"
+ },
+ {
+  "id": "air_filter",
+  "name": "Air filter",
+  "action": "clean",
+  "interval_km": 6000,
+  "source": "raw/chassis/example-150-manual.pdf p.12",
+  "notes": "C"
+ },
+ {
+  "id": "spark_plug",
+  "name": "Spark plug",
+  "action": "replace",
+  "interval_km": 12000,
+  "source": "raw/chassis/example-150-manual.pdf p.13",
+  "notes": "R"
+ },
+ {
+  "id": "brake_fluid",
+  "name": "Brake fluid",
+  "action": "replace",
+  "interval_months": 24,
+  "source": "raw/chassis/example-150-manual.pdf p.13",
+  "notes": "no km interval given"
+ }
+]

@@ -1,0 +1,2 @@
+{"ts": "2026-09-01T09:00:00", "kind": "decision", "title": "Scripts do the math", "text": "Every deadline, hash and percentage comes from a script, never from the model.", "tags": ["harness"], "source": "user", "tier": "T0"}
+{"ts": "2026-09-03T21:00:00", "kind": "lesson", "title": "Validate on every edit", "text": "A hook that runs the validator after each edit catches bad data before it spreads.", "tags": ["hooks", "validation"], "source": "user", "tier": "T0"}

@@ -1,0 +1,13 @@
+{
+ "note": "Allowlist for your public copy. Add every file you want to share; generalize anything with personal content (see the fourthwall skill).",
+ "rules": {
+  "excluded_prefixes": ["data/", "raw/", "inbox/", "out/", ".git/"],
+  "excluded_substrings": [],
+  "excluded_names": ["profile.json", "employment.json"]
+ },
+ "files": [
+  {"source": "scripts/_common.py", "target": "scripts/_common.py", "transform": "copy"},
+  {"source": "scripts/chassis.py", "target": "scripts/chassis.py", "transform": "copy"},
+  {"source": "LICENSE", "target": "LICENSE", "transform": "copy"}
+ ]
+}

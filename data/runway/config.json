@@ -1,0 +1,114 @@
+{
+ "source": "user",
+ "updated": "2026-01-01",
+ "note": "Fill this in when you connect your own site (see the runway skill, Launch). Every key is described in scripts/schemas.md -> RUNWAY.",
+ "site_repo": "../my-site",
+ "remote": "",
+ "main_branch": "main",
+ "content_branch": "content",
+ "data_path": "src/content/bragdoc.json",
+ "pdf": {
+  "file": "{short}_Resume.pdf",
+  "dir": "public",
+  "render": "public-resume"
+ },
+ "build_cmd": [
+  "npm",
+  "run",
+  "build"
+ ],
+ "check_cmd": null,
+ "test_cmd": [
+  "npm",
+  "test"
+ ],
+ "test_port": 4329,
+ "test_port_env": "TEST_PORT",
+ "dist_dir": "dist",
+ "synced_files": [],
+ "preview_url": null,
+ "code_slug_max": 30,
+ "site_url": "https://example.com",
+ "live_test_cmd": null,
+ "deploy_hook_file": "data/runway/deploy-hook.local",
+ "deploy_hook_pattern": "^https://\\S+$",
+ "deploy_wait_s": 900,
+ "deploy_poll_s": 15,
+ "daily_rebuild_utc": null,
+ "warm_paths": [
+  "/",
+  "/bragdoc"
+ ],
+ "warm_asset_regex": null,
+ "medium": {
+  "feed": null,
+  "poll_s": 120,
+  "max_s": 1800
+ },
+ "commit_trailer": null,
+ "repos": null,
+ "profile": null,
+ "max_highlights": 3,
+ "impact_bands": [
+  {
+   "min": 8,
+   "max": 10,
+   "impact": 3
+  },
+  {
+   "min": 5,
+   "max": 7,
+   "impact": 2
+  },
+  {
+   "min": 1,
+   "max": 4,
+   "impact": 1
+  }
+ ],
+ "fields": [
+  {
+   "id": "backend",
+   "name": "Backend & Data",
+   "color": "#57c08a"
+  },
+  {
+   "id": "security",
+   "name": "Security",
+   "color": "#e06a47"
+  },
+  {
+   "id": "ai",
+   "name": "AI Systems",
+   "color": "#6fc3df"
+  },
+  {
+   "id": "infra",
+   "name": "Infrastructure",
+   "color": "#f2b33d"
+  },
+  {
+   "id": "scale",
+   "name": "Scale & Leadership",
+   "color": "#b49ae8"
+  }
+ ],
+ "category_to_field": {
+  "Backend & APIs": "backend",
+  "Data & Databases": "backend",
+  "Performance": "backend",
+  "Architecture": "backend",
+  "Mobile": "backend",
+  "Testing & Verification": "backend",
+  "Cloud & DevOps": "infra",
+  "AI & LLM Systems": "ai",
+  "Security": "security",
+  "Community & Leadership": "scale"
+ },
+ "visibility_default": {
+  "new_entries": "private",
+  "current_employer": "private",
+  "source": "template default: every new entry starts private; change it to your own rule",
+  "note": "Applied once, when renovate creates an entry (bragdoc_public.py add-entry). Current employer = the open role in employment.json. A job change never flips an existing entry."
+ }
+}

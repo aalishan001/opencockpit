@@ -1,0 +1,3 @@
+Pillow>=10.1
+detect-secrets>=1.5
+pypdf>=4.0

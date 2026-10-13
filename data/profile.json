@@ -1,0 +1,69 @@
+{
+ "names": {
+  "short": "Your first name",
+  "public_full": "Your Name",
+  "formal": "Your Full Formal Name"
+ },
+ "field": "Your field, e.g. backend software engineering",
+ "career_start": "2024-01",
+ "location": "City, Country",
+ "influences": [],
+ "contacts": {
+  "phone": {
+   "value": "",
+   "channels": [
+    "internal",
+    "resume"
+   ]
+  },
+  "email_personal": {
+   "value": "",
+   "channels": [
+    "internal",
+    "resume"
+   ],
+   "note": "resumes always use this"
+  },
+  "email_domain": {
+   "value": "",
+   "channels": [
+    "internal",
+    "public"
+   ],
+   "note": "public channel only"
+  },
+  "linkedin": {
+   "value": "",
+   "channels": [
+    "internal",
+    "resume",
+    "public"
+   ]
+  },
+  "github": {
+   "value": "",
+   "channels": [
+    "internal",
+    "resume",
+    "public"
+   ]
+  },
+  "medium": {
+   "value": "",
+   "channels": [
+    "internal",
+    "resume",
+    "public"
+   ]
+  },
+  "website": {
+   "value": "",
+   "channels": [
+    "internal",
+    "resume",
+    "public"
+   ]
+  }
+ },
+ "source": "user"
+}

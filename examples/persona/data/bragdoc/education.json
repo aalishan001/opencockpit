@@ -1,0 +1,11 @@
+[
+ {
+  "degree": "B.Sc. Computer Science",
+  "institution": "Example State University",
+  "graduation": "2023-05",
+  "capstone": {
+   "title": "Campus bike-share demand model"
+  },
+  "source": "user"
+ }
+]

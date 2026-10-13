@@ -1,0 +1,14 @@
+{
+ "last_changelog_commit": null,
+ "last_export_hash": null,
+ "last_export_clean": false,
+ "last_export_at": null,
+ "approved_export_hash": null,
+ "approved_at": null,
+ "published_versions": [],
+ "ip_policy_checked": false,
+ "commit_email": null,
+ "staging_dir": "../cockpit-public-staging",
+ "clone_dir": "../cockpit-public",
+ "remote": ""
+}

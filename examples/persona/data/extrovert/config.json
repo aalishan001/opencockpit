@@ -1,0 +1,55 @@
+{
+ "source": "user",
+ "updated": "2026-01-01",
+ "news_fields": [
+  "Postgres & backend engineering",
+  "AI developer tools"
+ ],
+ "platforms": {
+  "medium": "canonical: the full piece",
+  "linkedin": "native summary; the Medium link goes in the first comment"
+ },
+ "voice_notes": [],
+ "ban": {
+  "phrases": [
+   "thrilled to announce",
+   "excited to share",
+   "game-changer",
+   "synergy",
+   "delve",
+   "humbled",
+   "passionate about",
+   "in today's fast-paced world",
+   "let that sink in",
+   "revolutionize",
+   "cutting-edge",
+   "seamless"
+  ],
+  "engagement_bait": [
+   "Agree?",
+   "Comment below"
+  ],
+  "emoji": true,
+  "not_just_x_its_y": true,
+  "em_dash_max": 0
+ },
+ "allowed": [],
+ "defaults": {
+  "person": "first",
+  "spelling": "US",
+  "tags_per_post": {
+   "min": 3,
+   "max": 5,
+   "applies_to": [
+    "medium",
+    "linkedin"
+   ]
+  }
+ },
+ "exclusions": {
+  "current_employer": "Never discuss current-employer details or projects. Current employer = the employment.json role with end: null."
+ },
+ "notes": [
+  "Example config for the fictional persona."
+ ]
+}

@@ -1,0 +1,109 @@
+{
+ "source": "user",
+ "updated": "2026-01-01",
+ "news_fields": [],
+ "platforms": {
+  "medium": "canonical: the full piece",
+  "linkedin": "native summary; the Medium link goes in the first comment"
+ },
+ "voice_notes": [],
+ "ban": {
+  "phrases": [
+   "thrilled to announce",
+   "excited to share",
+   "game-changer",
+   "synergy",
+   "delve",
+   "humbled",
+   "passionate about",
+   "in today's fast-paced world",
+   "let that sink in",
+   "revolutionize",
+   "cutting-edge",
+   "seamless"
+  ],
+  "engagement_bait": [
+   "Agree?",
+   "Comment below"
+  ],
+  "emoji": true,
+  "not_just_x_its_y": true,
+  "em_dash_max": 0
+ },
+ "allowed": [],
+ "defaults": {
+  "person": "first",
+  "spelling": "US",
+  "tags_per_post": {
+   "min": 3,
+   "max": 5,
+   "applies_to": [
+    "medium",
+    "linkedin"
+   ]
+  }
+ },
+ "exclusions": {
+  "current_employer": "Never discuss current-employer details or projects. Current employer = the employment.json role with end: null."
+ },
+ "notes": [
+  "Run /extrovert configure to fill news_fields and adjust the ban list."
+ ],
+ "profiles": {
+  "limits": {
+   "linkedin": {
+    "headline": 220,
+    "about": 2600,
+    "experience": 2000
+   },
+   "medium": {
+    "bio": 160
+   },
+   "github": {
+    "bio": 160
+   },
+   "checked": "2026-10-12",
+   "sources": [
+    "web:https://www.unilink.us/blog/linkedin-character-limits-2026",
+    "web:https://authoredup.com/blog/linkedin-character-limit",
+    "web:https://blog.medium.com/you-are-your-storys-best-asset-fd70c7d8c32",
+    "web:https://www.wordcountertool.net/character-limits/medium",
+    "web:https://rybbit.com/tools/github-bio-generator"
+   ],
+   "note": "Mostly unofficial sources (no official LinkedIn or GitHub page found); confirm in each editor. LinkedIn's About folds behind 'see more' after roughly 230-370 characters: the hook goes first."
+  },
+  "policy": {
+   "throttle_days": 14,
+   "exempt": [
+    "job"
+   ],
+   "top_impact_min": 3,
+   "triggers": {
+    "top_impact": [
+     "linkedin.about",
+     "linkedin.experience"
+    ],
+    "top5": [
+     "linkedin.about",
+     "linkedin.headline"
+    ],
+    "job": [
+     "linkedin.headline",
+     "linkedin.about",
+     "linkedin.experience",
+     "medium.bio",
+     "github.bio"
+    ],
+    "skill_group": [
+     "linkedin.about",
+     "linkedin.headline"
+    ]
+   },
+   "source": "template default: remind when a top-impact public entry is added or changes, the top 5 public entries change, the job or role changes, or a new skill group appears; at most once every 14 days except job or role changes"
+  },
+  "current_employer_rule": "Same level as the public PDF (employment.json public_summary + public_context) until the user lifts this rule.",
+  "role_attribution": {
+   "source": "user: which role an entry belongs to when its dates don't say"
+  }
+ }
+}

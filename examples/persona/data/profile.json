@@ -1,0 +1,67 @@
+{
+ "names": {
+  "short": "Sam",
+  "public_full": "Sam Rivera",
+  "formal": "Samuel Rivera"
+ },
+ "field": "Backend software engineering",
+ "career_start": "2023-06",
+ "location": "Springfield, Exampleland",
+ "influences": [],
+ "contacts": {
+  "phone": {
+   "value": "",
+   "channels": [
+    "internal",
+    "resume"
+   ]
+  },
+  "email_personal": {
+   "value": "sam.rivera@example.com",
+   "channels": [
+    "internal",
+    "resume"
+   ]
+  },
+  "email_domain": {
+   "value": "hello@samrivera.example",
+   "channels": [
+    "internal",
+    "public"
+   ]
+  },
+  "linkedin": {
+   "value": "https://www.linkedin.com/in/example",
+   "channels": [
+    "internal",
+    "resume",
+    "public"
+   ]
+  },
+  "github": {
+   "value": "https://github.com/example",
+   "channels": [
+    "internal",
+    "resume",
+    "public"
+   ]
+  },
+  "medium": {
+   "value": "",
+   "channels": [
+    "internal",
+    "resume",
+    "public"
+   ]
+  },
+  "website": {
+   "value": "https://samrivera.example",
+   "channels": [
+    "internal",
+    "resume",
+    "public"
+   ]
+  }
+ },
+ "source": "user"
+}

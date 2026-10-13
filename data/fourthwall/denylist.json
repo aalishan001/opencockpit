@@ -1,0 +1,15 @@
+{
+ "note": "Terms that must never reach the public copy. Name, phone, emails and location come from profile.json; employers from employment.json; project names from staging; internal names from the disclosure policy.",
+ "derive": {"profile": true, "employers": true, "projects": true, "policy": true},
+ "derive_ignore": [],
+ "terms": ["your-handle", "your private project codename"],
+ "exact_terms": [],
+ "regex": ["(?i)[A-Z]:\\\\Users\\\\", "(?i)/home/[a-z][\\w-]*/"],
+ "author_line_exemptions": [
+  {"file": "LICENSE", "line_regex": "^Copyright \\(c\\) "},
+  {"file": "README.md", "line_regex": "^(Author|Built by|Created by|Maintained by)\\b"}
+ ],
+ "lint_exempt": [
+  {"path": "data/bragdoc/disclosure_policy.json", "checks": ["vulnerability_classes"]}
+ ]
+}

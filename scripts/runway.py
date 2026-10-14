@@ -27,6 +27,9 @@ branches a preview URL. Everything specific to the site and its host lives in da
                                         then rebuild; on timeout, rebuild anyway (the daily rebuild catches a slow feed)
   runway.py verify-action               watch production while the user runs Actions -> daily-rebuild -> Run workflow;
                                         a redeploy proves the GitHub secret works, recorded in state
+  runway.py verify-action --scheduled [--grace S]
+                                        no click: wait for the next scheduled daily run, then for production to
+                                        redeploy after it (default grace 90 min), recorded in state
   runway.py live-check                  wait for nothing: just run the live smoke tests against production now
   runway.py profile [--write]           the profile README's cockpit block (top public entries, intro, links):
                                         print it with its gates and whether the README is current; --write updates it
@@ -779,6 +782,26 @@ def verify_action(max_s=None):
     print(f"Verified: the Action's deploy hook works (production redeployed {when(stamp)}).")
     return after_deploy(c, stamp - dt.timedelta(seconds=1), "verify-action")
 
+def next_daily_run(c, at=None):
+    """The next scheduled time of the daily-rebuild Action (config daily_rebuild_utc, HH:MM UTC), strictly after `at`."""
+    at = at or dt.datetime.now(dt.timezone.utc)
+    hh, mm = map(int, c.get("daily_rebuild_utc", "00:30").split(":"))
+    t = at.replace(hour=hh, minute=mm, second=0, microsecond=0)
+    return t if t > at else t + dt.timedelta(days=1)
+
+def verify_scheduled(grace_s=None, poll=None):
+    """Prove the Action's secret with no click: wait for the next scheduled daily run, then for production to serve a
+    deployment built after it (GitHub can start a schedule up to ~1 h late). Trigger no other deploy meanwhile."""
+    c = cfg(); sched = next_daily_run(c); grace_s = grace_s or c.get("schedule_grace_s", 5400); poll = poll or 180
+    print(f"Waiting for the scheduled daily rebuild ({when}(sched)), then watching production for up to {dur(grace_s)} after it...", flush=True)
+    while (left := (sched - dt.datetime.now(dt.timezone.utc)).total_seconds()) > 0: time.sleep(min(600, max(5, left)))
+    stamp = wait_live(c, sched, timeout=grace_s, poll=poll)
+    if not stamp: die(f"production was not redeployed within {dur(grace_s)} of the scheduled run: check Actions -> daily-rebuild "
+                      "(a missing or stale secret fails it with a clear message)")
+    st = state(); st["rebuild_action_verified"] = now().date().isoformat(); save_state(st)
+    print(f"Verified: the scheduled run's deploy hook works (production redeployed {when}(stamp), after the {when}(sched) schedule).")
+    return after_deploy(c, stamp - dt.timedelta(seconds=1), "verify-action (scheduled run)")
+
 def preview():
     c = cfg(); site = site_dir(c)
     data, ids, problems, notes = build()
@@ -821,6 +844,7 @@ def main(a):
     if cmd == "await-post" and rest and not rest[0].startswith("--"):
         num = lambda f: int(rest[rest.index(f) + 1]) if f in rest else None
         return await_post(rest[0], wait="--no-wait" not in rest, interval=num("--interval"), max_s=num("--max"))
+    if cmd == "verify-action" and "--scheduled" in rest: return verify_scheduled(int(rest[rest.index("--grace") + 1]) if "--grace" in rest else None)
     if cmd == "verify-action": return verify_action(int(rest[rest.index("--max") + 1]) if "--max" in rest else None)
     if cmd == "profile":
         c = cfg()

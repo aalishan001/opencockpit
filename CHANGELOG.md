@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.3 (2026-10-15)
+
+- RUNWAY: verify-action --scheduled proves the scheduled rebuild's deploy-hook secret with no click: it waits for the next scheduled run, then checks that production was redeployed after it (90-minute grace) and runs the live tests.
+
 ## v0.2.2 (2026-10-15)
 
 - The brag document is now written bragDoc everywhere in the docs, skills and rendered titles; commands, paths and file names keep their lowercase form (/bragdoc, data/bragdoc).

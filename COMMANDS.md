@@ -52,7 +52,7 @@ make <entry> public|private    set site visibility (natural language)
 /runway rebuild                 deploy hook → wait for production → live smoke tests
 /runway live-check              live tests against production now
 /runway profile                 a profile README's cockpit block: preview, gates, current?
-verify the daily rebuild        watch production while you run Actions → daily-rebuild
+verify the daily rebuild        no click: wait for the scheduled run, check production redeployed
 release current-employer entries   make held current-employer entries public + publish
 
 ## FOURTHWALL: the system itself

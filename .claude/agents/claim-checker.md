@@ -1,6 +1,6 @@
 ---
 name: claim-checker
-description: Verifies every bullet in a resume or post against BragDoc entries. Use before finalizing any resume version or any post that makes claims about the user's work.
+description: Verifies every bullet in a resume or post against bragDoc entries. Use before finalizing any resume version or any post that makes claims about the user's work.
 tools: Read, Grep, Glob
 ---
 

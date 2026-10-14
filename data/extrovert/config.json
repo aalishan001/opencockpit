@@ -57,7 +57,8 @@
     "experience": 2000
    },
    "medium": {
-    "bio": 160
+    "bio": 160,
+    "about": 1300
    },
    "github": {
     "bio": 160
@@ -68,9 +69,10 @@
     "web:https://authoredup.com/blog/linkedin-character-limit",
     "web:https://blog.medium.com/you-are-your-storys-best-asset-fd70c7d8c32",
     "web:https://www.wordcountertool.net/character-limits/medium",
-    "web:https://rybbit.com/tools/github-bio-generator"
+    "web:https://rybbit.com/tools/github-bio-generator",
+    "web:https://blog.medium.com/elevate-your-brand-with-a-new-customizable-about-page-3392eb9fba7d"
    ],
-   "note": "Mostly unofficial sources (no official LinkedIn or GitHub page found); confirm in each editor. LinkedIn's About folds behind 'see more' after roughly 230-370 characters: the hook goes first."
+   "note": "Mostly unofficial sources (no official LinkedIn or GitHub page found); confirm in each editor. LinkedIn's About folds behind 'see more' after roughly 230-370 characters: the hook goes first. Medium's About page has no published character limit (Medium only says the limit was raised): 1,300 is our own cap, the same reading length as LinkedIn's About."
   },
   "policy": {
    "throttle_days": 14,
@@ -81,7 +83,8 @@
    "triggers": {
     "top_impact": [
      "linkedin.about",
-     "linkedin.experience"
+     "linkedin.experience",
+     "medium.about"
     ],
     "top5": [
      "linkedin.about",
@@ -92,7 +95,8 @@
      "linkedin.about",
      "linkedin.experience",
      "medium.bio",
-     "github.bio"
+     "github.bio",
+     "medium.about"
     ],
     "skill_group": [
      "linkedin.about",

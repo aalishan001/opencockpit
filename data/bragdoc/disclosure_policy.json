@@ -4,7 +4,7 @@
  "note": "Every render reads this file. scripts/disclosure_lint.py enforces it; nothing ships with a lint failure. Edit the terms to match your situation.",
  "channels": {
   "internal": {
-   "description": "The BragDoc itself (render.py bragdoc). Only you see it. Everything allowed: full project detail, security specifics, all contacts, internal figures.",
+   "description": "The bragDoc itself (render.py bragdoc). Only you see it. Everything allowed: full project detail, security specifics, all contacts, internal figures.",
    "contacts": [
     "phone",
     "email_personal",
@@ -24,7 +24,7 @@
    }
   },
   "resume": {
-   "description": "Every resume (render.py resume-extensive and any resume built from the BragDoc).",
+   "description": "Every resume (render.py resume-extensive and any resume built from the bragDoc).",
    "contacts": [
     "phone",
     "email_personal",

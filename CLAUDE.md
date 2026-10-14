@@ -7,8 +7,8 @@ Personal command system run inside Claude Code. Five domains, each a skill with 
 |---|---|---|
 | CHASSIS | `/chassis` | Example domain: vehicle maintenance from the owner's manual, service slips and odometer readings |
 | EXTROVERT | `/extrovert` | Interview-style conversations → edited posts (Medium canonical, LinkedIn summary), ideas backlog, profile copy |
-| BRAGDOC | `/bragdoc` | Probed, metric-backed record of engineering work → BragDoc + extensive resume, with disclosure tiers |
-| RUNWAY | `/runway` | Ships the BragDoc's public channel to your own site repo (preview on a content branch, promote on your approval) |
+| bragDoc | `/bragdoc` | Probed, metric-backed record of engineering work → bragDoc + extensive resume, with disclosure tiers |
+| RUNWAY | `/runway` | Ships the bragDoc's public channel to your own site repo (preview on a content branch, promote on your approval) |
 | FOURTHWALL | `/fourthwall` | Documents the system itself (journal, changelog, README, case study) and exports a public, generalized copy |
 | HELP | `/cockpit [domain]` | Prints `COMMANDS.md` (or one domain's section) verbatim |
 
@@ -41,8 +41,8 @@ If it maps to nothing, say so and suggest the nearest command. Don't improvise a
 8. **Commands end the way their spec says.** One-off commands finish after output. Interactive commands continue until I say `/end` or their auto-end condition is met.
 9. **Tone.** Direct, concise, no flattery. If my claim or plan is weak, say so.
 10. **Command names.** COMMANDS.md is the source of truth for command names. Whenever a skill's commands change, update COMMANDS.md in the same commit.
-11. **Public data.** Only RUNWAY publishes, and nothing goes live until I approve a preview (`/runway promote`). Visibility of a BragDoc entry changes only on my explicit instruction: a specific one (`bragdoc_public.py set-visibility`), or my standing default in `data/runway/config.json` (applied once, when renovate creates an entry). Public summaries and site cards are generated automatically and must follow the redaction rules in the bragdoc skill.
-12. **Disclosure channels.** Anything that leaves the BragDoc is internal, resume or public, as defined in `data/bragdoc/disclosure_policy.json`. Every resume and public output passes `scripts/disclosure_lint.py` for its channel before I see it; nothing ships with a lint failure.
+11. **Public data.** Only RUNWAY publishes, and nothing goes live until I approve a preview (`/runway promote`). Visibility of a bragDoc entry changes only on my explicit instruction: a specific one (`bragdoc_public.py set-visibility`), or my standing default in `data/runway/config.json` (applied once, when renovate creates an entry). Public summaries and site cards are generated automatically and must follow the redaction rules in the bragdoc skill.
+12. **Disclosure channels.** Anything that leaves the bragDoc is internal, resume or public, as defined in `data/bragdoc/disclosure_policy.json`. Every resume and public output passes `scripts/disclosure_lint.py` for its channel before I see it; nothing ships with a lint failure.
 13. **Names.** Read them from `data/profile.json` → `names`; never hard-code one. Internal output: `short`. Public channel (website, posts, LICENSE, README, case studies, social): `short` by default, `public_full` only where a full name is genuinely required, such as a copyright line or author credit. Resume channel (resumes and formal applications only): `formal`, exactly as stored. An all-caps design is CSS `text-transform: uppercase`; the stored and linted text never changes.
 
 ## Git operations

@@ -126,7 +126,7 @@ def community_entries(channel="internal"): return ranked([e for e in visible(cha
 
 def experience_html(channel="internal"):
     """Employers newest first. Every channel except internal (resume, public) shows only each role's public_summary and
-    public_context; the internal context notes appear in the internal BragDoc only."""
+    public_context; the internal context notes appear in the internal bragDoc only."""
     jobs = load("bragdoc/employment.json", [])
     if not jobs: return ""
     out, order = "<h2>Experience</h2>", []
@@ -201,7 +201,7 @@ def bragdoc():
     comm = community_entries()
     if comm: body += f"<h2>{esc(COMMUNITY)}</h2>" + "".join(entry_block(e) for e in comm)
     body += in_progress_html()
-    save(page("BragDoc", body), stem("internal", "BragDoc"), "internal")
+    save(page("bragDoc", body), stem("internal", "BragDoc"), "internal")
 
 SUMMARY_FIELD = {"resume": "resume_summary", "public": "public_summary"}
 

@@ -31,9 +31,9 @@ you: chat, files, phone photos
 
 | Domain | What it does |
 |---|---|
-| **BRAGDOC** | A probed, metric-backed record of your work: brain dumps go to staging, a probe interviews you until each item has a problem, an action, a result and real numbers, and renovate ranks the entries and renders the BragDoc. |
+| **bragDoc** | A probed, metric-backed record of your work: brain dumps go to staging, a probe interviews you until each item has a problem, an action, a result and real numbers, and renovate ranks the entries and renders the bragDoc. |
 | **EXTROVERT** | Interviews you about an idea and edits the transcript into posts in your own voice (Medium, plus a LinkedIn summary). Keeps an ideas backlog and versioned profile copy. |
-| **RUNWAY** | Ships the BragDoc's public channel to your own site repo: a preview branch first, live only after you approve it, then live tests against production. |
+| **RUNWAY** | Ships the bragDoc's public channel to your own site repo: a preview branch first, live only after you approve it, then live tests against production. |
 | **FOURTHWALL** | Documents the system itself (journal, changelog, this README) and exports the public copy you are reading. |
 | **CHASSIS** | An example domain: vehicle maintenance from the manual, service slips and odometer readings. |
 | **HELP** | `/cockpit [domain]` prints the command sheet. `/end` closes whichever interactive command is running. |
@@ -69,7 +69,7 @@ inbox/ raw/ out/           created on first use: drop zone, originals, renders
 ## Safety rails
 
 - **Provenance:** every record carries a `source`, and a claim only an AI summary made must be confirmed before it reaches an entry.
-- **Claim checker:** a read-only subagent checks every resume bullet or post claim against the BragDoc.
+- **Claim checker:** a read-only subagent checks every resume bullet or post claim against the bragDoc.
 - **Disclosure channels:** internal, resume and public outputs are each checked against a policy file; a failing render writes nothing.
 - **Human gate:** nothing reaches your live site until you approve its preview.
 - **Git rules:** permission rules deny force pushes, hard resets and global config changes.

@@ -33,7 +33,7 @@ All `.jsonl` files: one JSON object per line. Dates are `YYYY-MM-DD`. Timestamps
 {"ts": "...", "kind": "decrease|jump|rollover|unreadable", "detail": "...", "resolution": "...", "source": "user"}
 ```
 
-## BRAGDOC
+## bragDoc
 
 `data/bragdoc/staging.jsonl`
 ```json
@@ -63,7 +63,7 @@ All `.jsonl` files: one JSON object per line. Dates are `YYYY-MM-DD`. Timestamps
 
 `data/bragdoc/probe_bank.md`: question bank per project (headings match `project`); probe skips questions the item already answers.
 
-`data/bragdoc/entries.jsonl`: the BragDoc's source of truth.
+`data/bragdoc/entries.jsonl`: the bragDoc's source of truth.
 ```json
 {"id": "e-0001", "title": "", "category": "", "employer": "", "period": "2025-06..2025-09",
  "problem": "", "action": "", "result": "", "metrics": [{"name": "", "before": "", "after": "", "unit": ""}],
@@ -109,7 +109,7 @@ All `.jsonl` files: one JSON object per line. Dates are `YYYY-MM-DD`. Timestamps
 [{"employer": "", "role": "", "start": "2025-03", "end": "2025-06", "source": "user", "context": ""}]
 ```
 - required: `employer`, `role`, `start` (`YYYY-MM`), `source`. `end`: `YYYY-MM` or `null` (present), not before `start`.
-- `context`: team size, company awards and other company-level facts, never personal achievements. No salaries, addresses or phone numbers. Internal: shown only in the internal BragDoc.
+- `context`: team size, company awards and other company-level facts, never personal achievements. No salaries, addresses or phone numbers. Internal: shown only in the internal bragDoc.
 - `public_summary` (one sentence under the role) and `public_context` (list of lines), both optional, user-approved: the employment wording every resume and the public PDF use instead of `context`.
 
 `data/bragdoc/education.json`
@@ -147,7 +147,7 @@ All `.jsonl` files: one JSON object per line. Dates are `YYYY-MM-DD`. Timestamps
 ```
 - phone must be a phone number, emails valid, link fields `https://`. Phone and personal email can never list `public`.
 
-`data/bragdoc/disclosure_policy.json`: the three disclosure channels, read by every render and every output built from the BragDoc.
+`data/bragdoc/disclosure_policy.json`: the three disclosure channels, read by every render and every output built from the bragDoc.
 - `channels.<internal|resume|public>`: `contacts` (allowed contact fields), `summary_field` (`resume_summary` / `public_summary`), `checks` (which lint checks apply), `cost_figures` (`relative_only` / `none`), `names` (`form`: which `profile.names` form the channel's renders show; `require: true` = a whole output must contain that form exactly; `block_formal: true` = the formal form is blocked).
 - `terms`: regex lists `always_banned`, `current_employer_internal_names`, `vulnerability_classes`; `cost_patterns`: `absolute`, `cost_words`. Client/employer and project/app names are allowed on every channel; per-entry `public_constraints` still forbid security details tied to a named client.
 - Per-entry `public_constraints` apply to the resume and public channels. Enforced by `scripts/disclosure_lint.py --channel <c> <file>` (exit 1 = blocked).
@@ -188,7 +188,7 @@ Public entries only. `highlight` appears on at most `max_highlights` entries (`s
 - `ban` is enforced by `scripts/voice_lint.py <file.md>` (exit 1 on any violation).
 
 
-`data/extrovert/profiles/<platform>/v<N>.md` (linkedin, medium, github): profile copy, `## <section>` per piece (linkedin: `headline`, `about`, `experience: <employer> · <role>` for every role in employment.json; medium/github: `bio`). Written only by `profiles.py save` after its gates. `data/extrovert/profiles/state.json`: per platform `{latest, versions {N: {date, snapshot {top_impact {id: payload hash}, top5 [ids], job [[employer, role, start]], skill_groups [..]}}}, applied {version, date}}` plus `last_reminded`. Config: `data/extrovert/config.json` → `profiles {limits {linkedin {headline, about, experience}, medium {bio}, github {bio}, checked, sources, note}, policy {throttle_days, exempt, top_impact_min, triggers {trigger: [platform.piece]}, source}, current_employer_rule, role_attribution {source, "<employer> · <role>": [entry ids]}}` (the user's answers on which role an entry belongs to when its dates don't say).
+`data/extrovert/profiles/<platform>/v<N>.md` (linkedin, medium, github): profile copy, `## <section>` per piece (linkedin: `headline`, `about`, `experience: <employer> · <role>` for every role in employment.json; medium: `bio`, `about`; github: `bio`). Written only by `profiles.py save` after its gates. `data/extrovert/profiles/state.json`: per platform `{latest, versions {N: {date, snapshot {top_impact {id: payload hash}, top5 [ids], job [[employer, role, start]], skill_groups [..]}}}, applied {version, date}}` plus `last_reminded`. Config: `data/extrovert/config.json` → `profiles {limits {linkedin {headline, about, experience}, medium {bio, about}, github {bio}, checked, sources, note}, policy {throttle_days, exempt, top_impact_min, triggers {trigger: [platform.piece]}, source}, current_employer_rule, role_attribution {source, "<employer> · <role>": [entry ids]}}` (the user's answers on which role an entry belongs to when its dates don't say).
 
 `data/extrovert/ideas.jsonl`: idea backlog, an **append-only event log** (never rewrite past lines). Current state is derived by `scripts/ideas.py`.
 ```json
@@ -224,7 +224,7 @@ Public entries only. `highlight` appears on at most `max_highlights` entries (`s
 - `status` **required**: `open|edited|posted`. If `posted`, `published` must be non-empty.
 - each `published` item **required**: `platform` (`medium|linkedin`; GitHub is not a post target), `url` (`https://`), `title`, `published_date` (`YYYY-MM-DD`), `read_time_min` and `word_count` (integers from `post_stats.py`, never estimated), `canonical` (boolean). Optional: `subtitle`, `tags`, `cover_image_suggestion`, `excerpt` (≤ 40 words).
 - exactly one `canonical: true` item per conversation (the platform hosting the full piece). New platforms are appended, never overwritten.
-- `related_entries` optional: BragDoc entry ids; each must exist in `entries.jsonl`.
+- `related_entries` optional: bragDoc entry ids; each must exist in `entries.jsonl`.
 
 ## FOURTHWALL
 

@@ -1,13 +1,13 @@
 ---
 name: runway
-description: Ships the BragDoc's public channel to the user's own website (a static site in its own git repo, next to cockpit). Commands - publish, promote, ship, showcase, status, rebuild, live-check, profile, release current-employer; also waits for a new post to reach the site. Use when the user talks about the website, the portfolio, publishing or previewing site content, case studies on the homepage, the site's resume PDF, or deploying.
+description: Ships the bragDoc's public channel to the user's own website (a static site in its own git repo, next to cockpit). Commands - publish, promote, ship, showcase, status, rebuild, live-check, profile, release current-employer; also waits for a new post to reach the site. Use when the user talks about the website, the portfolio, publishing or previewing site content, case studies on the homepage, the site's resume PDF, or deploying.
 ---
 
 # RUNWAY
 
 **No command given** (bare `/runway`): read `COMMANDS.md` and print its `## RUNWAY` section verbatim (heading through the line before the next `## `) in a fenced code block. Nothing else, no commit.
 
-RUNWAY moves the BragDoc's **public channel** into the site repo, one way only. `python scripts/runway.py` does all of it: building the data, every gate, git in the site repo, hashes. RUNWAY generates nothing: renovate already wrote every summary, card, slug and year (see the bragdoc skill). If anything is missing or out of date, publish blocks and names it; fix it through renovate, never at publish time.
+RUNWAY moves the bragDoc's **public channel** into the site repo, one way only. `python scripts/runway.py` does all of it: building the data, every gate, git in the site repo, hashes. RUNWAY generates nothing: renovate already wrote every summary, card, slug and year (see the bragdoc skill). If anything is missing or out of date, publish blocks and names it; fix it through renovate, never at publish time.
 
 - **Config:** `data/runway/config.json` (site path, remote, branches, build/check/test commands, preview-URL pattern, deploy hook, field map, impact bands, PDF name, the **standing visibility default**; every key is in `scripts/schemas.md`).
 - **State:** `data/runway/state.json` (showcase, showcase intents, retired slugs, email confirmation, last publish/promote, shipped code branches).
@@ -26,7 +26,7 @@ RUNWAY moves the BragDoc's **public channel** into the site repo, one way only. 
 | `title` / `summary` / `stack` | `public_summary` headline / summary / stack |
 | `metric` / `context` / `did` / `result` / `where` | `site_card` |
 | `highlight` | `state.showcase` (max 3; public; never the current employer's), with showcase intents applied |
-| `pdf` | the full public BragDoc (`render.py public-resume`, header `names.public_full`), served at `/<pdf.file>` |
+| `pdf` | the full public bragDoc (`render.py public-resume`, header `names.public_full`), served at `/<pdf.file>` |
 
 ## Gates (every publish; any failure writes nothing)
 - **Contract check:** field ids exist, impact 1–3, ≤ 3 highlights, unique slug ids, every required string present.
@@ -40,7 +40,7 @@ RUNWAY moves the BragDoc's **public channel** into the site repo, one way only. 
 | Command | Does |
 |---|---|
 | `/runway publish` | `runway.py publish`: gates → `content` branch (merged up from `main`) → write data + PDF → build + check + tests → commit → push → print the preview URL. Nothing is live. Show me the URL and wait |
-| `/runway promote` | Only after I approve the preview: `runway.py promote` merges `content` → `main`, pushes, and sets `published_hash` (from `bragdoc_public.py payload-hash`) for every published entry; entries made private since get `published_hash: null`. Refuses if the BragDoc changed after the publish. Then it waits for the production deploy and runs the live tests (see "After every promote and rebuild") |
+| `/runway promote` | Only after I approve the preview: `runway.py promote` merges `content` → `main`, pushes, and sets `published_hash` (from `bragdoc_public.py payload-hash`) for every published entry; entries made private since get `published_hash: null`. Refuses if the bragDoc changed after the publish. Then it waits for the production deploy and runs the live tests (see "After every promote and rebuild") |
 | `/runway ship "<summary>"` | `runway.py ship "<summary>" [--slug <slug>]`: for site code changes I asked for, sitting uncommitted on `main`. Refuses content files (they go through publish). Runs the gates on main + the changes first (nothing is created if one fails), then creates `code/<slug>` (≤ `config.code_slug_max` characters, so the preview hostname works), commits (with `config.commit_trailer`), pushes, returns the site repo to clean `main`, records `state.ships`, and prints the preview URL. Show me the URL and wait |
 | `/runway promote code/<slug>` | Only after I approve that preview: `runway.py promote code/<slug>`: if `main` moved since the ship, merges it into the branch and runs the gates again; then fast-forwards `main`, pushes, waits for the production deploy and runs the live tests |
 | `/runway showcase <ids>` | `runway.py showcase <entry_ids>` (max 3; public; never current-employer). `runway.py showcase intent <staging_id> --replaces <entry_id>`: once that staging item is probed, renovated and public, its entry takes the slot at the next publish |

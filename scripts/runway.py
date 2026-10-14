@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""RUNWAY: builds a website's data from the BragDoc's public channel and ships it to the site repo, one way only.
+"""RUNWAY: builds a website's data from the bragDoc's public channel and ships it to the site repo, one way only.
 The site can be any static site in its own git repo, hosted anywhere that builds `main` for production and gives
 branches a preview URL. Everything specific to the site and its host lives in data/runway/config.json.
   runway.py table                       the site data as it would publish: id, field, impact, metric, title (+ showcase)
@@ -164,7 +164,7 @@ def pending(data, st):
     return changed, removed, site_hash(data) != st.get("published_site_hash")
 
 def render_pdf(c):
-    """The full public BragDoc (render.py public-resume, which lints its HTML and its PDF and writes nothing on failure)."""
+    """The full public bragDoc (render.py public-resume, which lints its HTML and its PDF and writes nothing on failure)."""
     p = subprocess.run([sys.executable, str(ROOT / "scripts/render.py"), "public-resume"], capture_output=True, text=True, encoding="utf-8",
                        env={**os.environ, "PYTHONIOENCODING": "utf-8"})
     if p.returncode: die("public PDF gate failed:\n" + (p.stdout + p.stderr).strip())
@@ -371,7 +371,7 @@ def promote(initial=False, wait=True):
     data, ids, problems, _ = build()
     if problems: die("gates fail now:\n  " + "\n  ".join(problems))
     if site_hash(data) != lp["site_hash"] or {e["id"]: bp.payload_hash(e) for e in read_jsonl(ENTRIES) if e["id"] in ids} != lp["entries"]:
-        die("the BragDoc changed since the last publish: publish again, check the preview, then promote")
+        die("the bragDoc changed since the last publish: publish again, check the preview, then promote")
     if initial:
         if lp["branch"] != c["main_branch"]: die("--initial promotes the first publish on main only")
         if git("rev-parse", c["main_branch"], cwd=site).stdout.strip() != lp["commit"]: die("main has moved since the first publish")
@@ -442,7 +442,7 @@ def profile_top(c, data, ids):
     return out
 
 def profile_line(row, site):
-    """One line per entry: its public headline, linked to its BragDoc card; the metric only when it adds something."""
+    """One line per entry: its public headline, linked to its bragDoc card; the metric only when it adds something."""
     nums = re.findall(r"\d[\d,.]*", row["metric"])
     extra = "" if nums and all(n.rstrip(".,") in row["title"] for n in nums) else f" · {row['metric']}"
     return f"- [{row['title']}]({site}/bragdoc#{row['id']}){extra}"
@@ -457,7 +457,7 @@ def profile_block(c):
     links = " · ".join(f"[{label}]({prof[k]['value']})" for k, label in (("website", host), ("medium", "Medium"), ("linkedin", "LinkedIn"))
                        if prof.get(k, {}).get("value") and "public" in prof.get(k, {}).get("channels", []))
     intro, picked = c["profile"]["intro"], profile_top(c, data, ids)
-    head = [*[l + ("\\" if i < len(intro) - 1 else "") for i, l in enumerate(intro)], "", f"**Selected work** ([the full BragDoc]({site}/bragdoc))", ""]
+    head = [*[l + ("\\" if i < len(intro) - 1 else "") for i, l in enumerate(intro)], "", f"**Selected work** ([the full bragDoc]({site}/bragdoc))", ""]
     lines = [P_START, P_NOTE, *head, *[profile_line(r, site) for r, _ in picked], "", links, P_END]
     text = "\n".join(lines)
     # disclosure, as the site's own gate does it: each entry's strings with that entry as context (relative cost
@@ -517,7 +517,7 @@ def profile_write(c):
     path.write_text(new, encoding="utf-8", newline="")
     git("add", pc.get("readme", "README.md"), cwd=d)
     trailer = c.get("commit_trailer")
-    git("commit", "-q", "-m", "cockpit: update the selected-work block from the public BragDoc" + (f"\n\n{trailer}" if trailer else ""), cwd=d)
+    git("commit", "-q", "-m", "cockpit: update the selected-work block from the public bragDoc" + (f"\n\n{trailer}" if trailer else ""), cwd=d)
     push = git("push", "-q", "origin", pc.get("branch", "main"), cwd=d, check=False)
     print("Profile README: cockpit block updated" + (" and pushed." if push.returncode == 0 else f"; PUSH FAILED: {push.stderr.strip()}"))
     return 0 if push.returncode == 0 else 1

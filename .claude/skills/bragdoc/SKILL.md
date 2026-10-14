@@ -3,9 +3,9 @@ name: bragdoc
 description: In-depth, metric-backed brag document of the user's engineering and career work (a performance-review and career record). Commands - dump, stage, probe, renovate, brag, extractor. Use whenever the user mentions achievements, brain dumps, work they did, weekly wins, updating their brag doc, an extensive resume, or summaries from coding sessions - even without saying "bragdoc".
 ---
 
-# BRAGDOC
+# bragDoc
 
-**No command given** (bare `/bragdoc`): read `COMMANDS.md` and print its `## BRAGDOC` section verbatim (heading through the line before the next `## `) in a fenced code block. Nothing else, no commit.
+**No command given** (bare `/bragdoc`): read `COMMANDS.md` and print its `## bragDoc` section verbatim (heading through the line before the next `## `) in a fenced code block. Nothing else, no commit.
 
 "An in-depth, detailed brag document of all my engineering and career work."
 
@@ -44,10 +44,10 @@ Accept text, files, or folders (brain dumps, old resumes, docs). Move originals 
 
 **Pre-probed fast path.** Fill `probe` fields from sources for every item (only T0–T2 facts, never T3-only ones). An item goes straight to `status: "probed"` only if it meets the completeness criterion below *and* has no open conflicts, no `needs_confirmation` claims and a known `kind`. Otherwise `status: "raw"` with `open_gaps` listing exactly what's missing, so probe asks only that. For each fast-path item, write `probes/<id>.md` listing the claims each field came from, and add a confidentiality question (`topic: "confidentiality"`): "anything here not OK to say publicly?" (the fast path skips the probe's own question).
 
-**Everything goes in the BragDoc.** Achievements, including community, teaching, leadership and competitions, go through staging (non-engineering ones: `kind: "community"`, category "Community & Leadership" at renovate). Other material goes to its own file (schemas in `scripts/schemas.md`):
+**Everything goes in the bragDoc.** Achievements, including community, teaching, leadership and competitions, go through staging (non-engineering ones: `kind: "community"`, category "Community & Leadership" at renovate). Other material goes to its own file (schemas in `scripts/schemas.md`):
 - skills → `skills.json` (level only in my own words; evidence via `evidence_staging_ids` until renovate)
 - education → `education.json`
-- employment history → `employment.json` (employer, role, start, end, source; company awards and team size as `context`, never as my achievement; no salaries, addresses or phone numbers). `context` is internal: only the internal BragDoc shows it. Every resume and the public PDF use the user-approved `public_summary` (one sentence under the role) and `public_context` (lines) instead
+- employment history → `employment.json` (employer, role, start, end, source; company awards and team size as `context`, never as my achievement; no salaries, addresses or phone numbers). `context` is internal: only the internal bragDoc shows it. Every resume and the public PDF use the user-approved `public_summary` (one sentence under the role) and `public_context` (lines) instead
 - unfinished work → `in_progress.jsonl` (promote to a staging item when completed)
 
 After writing: a table per batch (items, probed/raw, open gaps, conflicts), then all questions grouped by batch with conflicts first. Validate, commit, push.
@@ -112,9 +112,9 @@ Save the transcript (these answers included, like every other answer), fill `pro
 Items not yet probed stay in staging.
 
 ## Disclosure channels
-Everything that leaves the BragDoc goes through one of three channels defined in `data/bragdoc/disclosure_policy.json` and enforced by `python scripts/disclosure_lint.py --channel internal|resume|public <file>`. Renders lint themselves and write nothing on failure; a failure shows the offending lines, which get fixed (usually by regenerating that entry's channel summary). Nothing ships with a lint failure.
+Everything that leaves the bragDoc goes through one of three channels defined in `data/bragdoc/disclosure_policy.json` and enforced by `python scripts/disclosure_lint.py --channel internal|resume|public <file>`. Renders lint themselves and write nothing on failure; a failure shows the offending lines, which get fixed (usually by regenerating that entry's channel summary). Nothing ships with a lint failure.
 - **internal** (`render.py bragdoc`): only me. Full entry detail, security specifics, all contacts, cost figures.
-- **resume** (`render.py resume-extensive` and any resume built from the BragDoc): written from `resume_summary` + resume contacts (phone and the personal email; resumes always use the personal email, never the domain email).
+- **resume** (`render.py resume-extensive` and any resume built from the bragDoc): written from `resume_summary` + resume contacts (phone and the personal email; resumes always use the personal email, never the domain email).
 - **public** (the website, shipped by RUNWAY; `render.py public-resume` is its PDF, served as `/<names.short>_Resume.pdf`, public entries only): written from `public_summary` and `site_card` + public contacts (the domain email, never phone or personal email).
 - **Names** (`data/profile.json` → `names`; each channel's form is in the policy): internal renders show `short`, resume renders `formal` exactly as stored, the public resume `public_full`. Summaries and other public prose use `short`, or `public_full` only where a full name is genuinely required. Never type a name into an output; an all-caps design is CSS `text-transform: uppercase`, never changed text. The lint flags any wrong casing of the formal name on every channel.
 
@@ -136,13 +136,13 @@ Two channel summaries plus one site card per entry (cards follow the public rule
 - Business numbers (the user's rule, enforced by disclosure_lint): user counts and usage scale (users, downloads, concurrent users, records, sites) from past employers', clients' or personal work are allowed; the current employer's user, tenant and customer counts never; revenue and contract values never, for any employer. Per-entry `public_constraints` still win.
 - Allowed: employer name, the problem type in generic terms, my role, public technologies, and impact as relative change ("cut p95 latency by ~60%") when the absolute numbers aren't sensitive (money figures: see above). Compute the change with `python scripts/bragdoc_public.py change <before> <after>`, never in your head.
 - Personal projects, products, open source, community: anything I'd put in a public README is fine; still respect `public_constraints`. Only personal projects, products and open source are expected to have links.
-- Never add claims not in the entry. Same truthfulness rules as the rest of BragDoc.
+- Never add claims not in the entry. Same truthfulness rules as the rest of bragDoc.
 - Tone: confident, concrete, no buzzwords; readable by any engineer or reviewer.
 
 **Visibility:** changes only when I explicitly say so. "make <entry> public|private" (by id or title; if ambiguous, ask which) → `python scripts/bragdoc_public.py set-visibility <id> public|private`, show the entry's `public_summary`, commit, push.
 
 ### brag (one-off)
-Run `python scripts/render.py resume-extensive`, which produces `out/<names.formal>_Resume_Extensive.pdf` (spaces as underscores) on the **resume channel**: ATS-friendly, single column, standard headings, the whole BragDoc except In Progress, written from each entry's `resume_summary` with resume contacts. The render lints itself; on failure, show the offending lines, fix the summaries, re-render. Show the path.
+Run `python scripts/render.py resume-extensive`, which produces `out/<names.formal>_Resume_Extensive.pdf` (spaces as underscores) on the **resume channel**: ATS-friendly, single column, standard headings, the whole bragDoc except In Progress, written from each entry's `resume_summary` with resume contacts. The render lints itself; on failure, show the offending lines, fix the summaries, re-render. Show the path.
 
 ### extractor (two steps: emit a prompt, then take the summary back as a dump)
 Modes, one prompt per kind of source:

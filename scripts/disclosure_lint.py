@@ -118,7 +118,7 @@ def to_lines(text):
 
 def check(lines, channel, ctx, constraint_terms=None, whole_doc=False, entry=NO_ENTRY):
     """whole_doc=True for a complete output (a rendered resume): enables the channel's 'require' name rule.
-    entry: the BragDoc entry these lines describe (decides relative-cost rules); omitted = a whole document."""
+    entry: the bragDoc entry these lines describe (decides relative-cost rules); omitted = a whole document."""
     pol, checks = ctx["policy"], set(ctx["policy"]["channels"][channel]["checks"])
     terms = pol.get("terms", {}); costs = pol.get("cost_patterns", {})
     rx = {k: [re.compile(p) for p in terms.get(k, [])] for k in terms}

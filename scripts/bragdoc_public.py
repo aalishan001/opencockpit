@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Public layer for BragDoc entries. Deterministic, no model calls. Never publishes anything (RUNWAY does).
+"""Public layer for bragDoc entries. Deterministic, no model calls. Never publishes anything (RUNWAY does).
   bragdoc_public.py hash <entry_id>                    source hash of the entry's private fields
   bragdoc_public.py payload-hash <entry_id>            hash of the site payload (what runway promote stores as published_hash)
   bragdoc_public.py stale [--channel public|resume|card|all]   entries whose public_summary / resume_summary / site_card

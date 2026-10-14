@@ -30,7 +30,7 @@ I posted <conv> on <platform>: <url>   record it; Medium: wait for the feed, reb
 /extrovert profiles applied <platform|all>   record what I pasted
 /extrovert profiles status       latest vs applied, what's stale
 
-## BRAGDOC: achievements
+## bragDoc: achievements
 /bragdoc dump <text/files>      add items to staging
 /bragdoc stage                  show staging + status
 /bragdoc probe [id/batch]       grill me on one item/batch

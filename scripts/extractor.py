@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""BRAGDOC extractor: writes the read-only prompt for an AI session, and checks what comes back. Deterministic only.
+"""bragDoc extractor: writes the read-only prompt for an AI session, and checks what comes back. Deterministic only.
   extractor.py prompt session [--personal]
   extractor.py prompt incident <YYYY-MM-DD> "<short description>" [--personal]
   extractor.py prompt project [--personal]

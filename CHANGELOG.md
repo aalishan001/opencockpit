@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.4 (2026-10-15)
+
+- RUNWAY: verify-action --scheduled now prints the scheduled and deploy times instead of a function name.
+
 ## v0.2.3 (2026-10-15)
 
 - RUNWAY: verify-action --scheduled proves the scheduled rebuild's deploy-hook secret with no click: it waits for the next scheduled run, then checks that production was redeployed after it (90-minute grace) and runs the live tests.

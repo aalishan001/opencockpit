@@ -793,13 +793,13 @@ def verify_scheduled(grace_s=None, poll=None):
     """Prove the Action's secret with no click: wait for the next scheduled daily run, then for production to serve a
     deployment built after it (GitHub can start a schedule up to ~1 h late). Trigger no other deploy meanwhile."""
     c = cfg(); sched = next_daily_run(c); grace_s = grace_s or c.get("schedule_grace_s", 5400); poll = poll or 180
-    print(f"Waiting for the scheduled daily rebuild ({when}(sched)), then watching production for up to {dur(grace_s)} after it...", flush=True)
+    print(f"Waiting for the scheduled daily rebuild ({when(sched)}), then watching production for up to {dur(grace_s)} after it...", flush=True)
     while (left := (sched - dt.datetime.now(dt.timezone.utc)).total_seconds()) > 0: time.sleep(min(600, max(5, left)))
     stamp = wait_live(c, sched, timeout=grace_s, poll=poll)
     if not stamp: die(f"production was not redeployed within {dur(grace_s)} of the scheduled run: check Actions -> daily-rebuild "
                       "(a missing or stale secret fails it with a clear message)")
     st = state(); st["rebuild_action_verified"] = now().date().isoformat(); save_state(st)
-    print(f"Verified: the scheduled run's deploy hook works (production redeployed {when}(stamp), after the {when}(sched) schedule).")
+    print(f"Verified: the scheduled run's deploy hook works (production redeployed {when(stamp)}, after the {when(sched)} schedule).")
     return after_deploy(c, stamp - dt.timedelta(seconds=1), "verify-action (scheduled run)")
 
 def preview():

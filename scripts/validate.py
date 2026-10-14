@@ -12,6 +12,7 @@ METRIC_TYPES = {"scale", "impact"}
 EVIDENCE = {"measured", "git", "estimate", "memory"}   # extractor tags: [measured] [from git/logs/docs] [estimate] [from my memory]
 EXTRACTOR_SOURCE = re.compile(r"^extractor:(session|incident|project|period):\d{4}-\d{2}-\d{2}$")
 PASSIVE = re.compile(r"\b(worked on|helped|assisted|was responsible for)\b", re.I)
+WAIVABLE = {"scale", "impact", "stack", "problem"}   # probe parts the user answered "don't know" to (probe.waived)
 YM = re.compile(r"^\d{4}-\d{2}$")
 IP_KINDS, IP_STATUS = {"study", "certification", "project"}, {"planned", "in_progress", "paused", "done", "dropped"}
 # never allowed anywhere in data/: phone numbers outside profile.json contacts, and the policy's always_banned terms
@@ -86,11 +87,20 @@ def staging_item(s, pr, w, qids):
             if c.get("question_id") not in qids: errors.append(f"{cw}: open conflict needs a question_id in questions.jsonl")
     for i, m in enumerate(pr.get("metrics", [])):
         if m.get("type") not in METRIC_TYPES: errors.append(f"{w}: probe.metrics[{i}].type must be scale|impact")
+    # probe.waived: what the user answered they don't have ("don't know", AS-IS). Only the user waives, and only these parts.
+    wv = pr.get("waived")
+    waived = set()
+    if wv is not None:
+        if not (isinstance(wv, dict) and isinstance(wv.get("fields"), list) and set(wv["fields"]) <= WAIVABLE and wv["fields"]):
+            errors.append(f"{w}: probe.waived needs fields (a non-empty subset of {sorted(WAIVABLE)}), source and reason")
+        elif not (str(wv.get("source", "")).startswith("user") and str(wv.get("reason", "")).strip()):
+            errors.append(f"{w}: probe.waived needs a source starting with 'user' and a reason")
+        else: waived = set(wv["fields"])
     if s.get("status") == "probed":  # completeness criterion: fast-path fields + metrics minimum standard
         for k in ("problem", "action", "result", "my_role", "stack"):
-            if not pr.get(k): errors.append(f"{w}: probed but probe.{k} is empty")
-        types = {m.get("type") for m in pr.get("metrics", [])}
-        if not {"scale", "impact"} <= types: errors.append(f"{w}: probed needs at least one scale and one impact metric")
+            if not pr.get(k) and k not in waived: errors.append(f"{w}: probed but probe.{k} is empty")
+        types = {m.get("type") for m in pr.get("metrics", [])} | (waived & {"scale", "impact"})
+        if not {"scale", "impact"} <= types: errors.append(f"{w}: probed needs at least one scale and one impact metric (or the user's waiver)")
         if open_conflicts: errors.append(f"{w}: probed with {open_conflicts} open conflict(s)")
         if any(c.get("needs_confirmation") for c in s.get("source_claims", [])):
             errors.append(f"{w}: probed with unconfirmed (T3-only/assumed) claims")

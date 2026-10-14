@@ -81,6 +81,7 @@ One question at a time. Estimated metrics are allowed only if labelled as estima
 - an **ownership** signal in `my_role`/`action` (led, designed, owned, independently built)
 - **no passive verbs** (worked on, helped, assisted, was responsible for)
 - no open conflicts, no `needs_confirmation` claims, empty `open_gaps`
+- **Answered without data** (my AS-IS, or "don't know" to a metric or the stack): `probe.waived` = `{fields: [scale|impact|stack|problem], source: "user, <date> (<answers file>)", reason}` exempts exactly those parts, nothing else. Only my answer waives; never fill the gap with an estimate instead
 
 Save the transcript (these answers included, like every other answer), fill `probe` including `kind`, `links`, and `public_constraints` (if I say "nothing", store `[]` explicitly), set `status: probed` (or `probing` if ended early, with `open_gaps` listed). Commit.
 

@@ -56,7 +56,7 @@ All `.jsonl` files: one JSON object per line. Dates are `YYYY-MM-DD`. Timestamps
 - `source` of an extractor paste-back: `extractor:<session|incident|project|period>:<YYYY-MM-DD>` (from `scripts/extractor.py source <mode>`; validated).
 - `conflicts` (optional): each needs ≥ 2 `values` and `status` `open|resolved`. Open → `question_id` must exist in `questions.jsonl`. Resolved → `resolution` required.
 - `probe.metrics[].type` **required**: `scale` (users, records, requests, team size) or `impact` (% change, time saved, cost cut, issues resolved).
-- **`status: probed` requires** (validate.py): problem, action, result, my_role, stack filled; ≥ 1 scale and ≥ 1 impact metric; no open conflicts; no `needs_confirmation` claims; empty `open_gaps`; no passive verbs (worked on, helped, assisted, was responsible for) in action/result/my_role.
+- **`status: probed` requires** (validate.py): problem, action, result, my_role, stack filled; ≥ 1 scale and ≥ 1 impact metric; no open conflicts; no `needs_confirmation` claims; empty `open_gaps`; no passive verbs (worked on, helped, assisted, was responsible for) in action/result/my_role. `probe.waived` (optional) `{fields, source, reason}`: the parts the user answered they have no data for (a non-empty subset of scale, impact, stack, problem; source starts with `user`): those parts are not required.
 - `probe.kind`, `probe.links`, `probe.public_constraints`: optional, same rules as on entries; renovate carries them into the entry.
 
 `data/bragdoc/probes/<staging-id>.md`: probe transcript, or for fast-path items the list of source claims each field came from.

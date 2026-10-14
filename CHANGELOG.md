@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.1 (2026-10-15)
+
+- BRAGDOC: a probed item can record the parts its owner answered they have no data for (probe.waived: scale, impact, stack or problem, with the owner as source and a reason). Validation exempts exactly those parts, so an honest "don't know" renovates without anyone filling the gap with a guessed number.
+
 ## v0.2.0 (2026-10-14)
 
 - RUNWAY, a new domain: ships the BragDoc's public channel to a site repo of your own as one JSON file (a documented data contract) plus a public resume PDF. Every publish is gated by a contract check, the public disclosure lint per entry and as one document, and the site's own build, check and tests.

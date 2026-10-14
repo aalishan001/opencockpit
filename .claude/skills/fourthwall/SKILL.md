@@ -12,7 +12,7 @@ The domain that looks at the system itself: it keeps a private journal of how th
 ## Principles
 1. **Allowlist, never strip.** The public copy is *generated* from an explicit manifest of generalized files (`data/fourthwall/manifest.json`). Nothing outside the manifest can reach it. Never copy or mirror the private repo, never make it public, never share git history: the public copy has its own fresh history.
 2. **Hand off, don't write.** Fourthwall never writes other domains' data. It uses their commands: `bragdoc_stage.py add` (the bragdoc dump path), `ideas.py add`, and a case-study draft queued for RUNWAY.
-3. **Show then push.** Every publish shows me the full diff and the leak report and waits for my explicit approval. Never automatic.
+3. **Show then push, unless the owner set a standing rule.** By default every publish shows me the full diff and the leak report and waits for my explicit approval. If I record a standing rule (`state.json` → `auto_publish`), a clean export whose own tests pass (`python tests/test_suite.py` in `staging_dir`) is approved and published without asking, and I'm told afterwards. Any failure means no publish.
 4. **Excluded structurally:** any private domain I list in the manifest rules (its skill, data, rules, scripts), `data/`, `raw/`, `inbox/`, `out/`, probes, `profile.json`, employment, real test fixtures, `.git`, settings with personal paths. The manifest rules reject them; validate.py and export enforce it.
 
 ## Data

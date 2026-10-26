@@ -1,6 +1,6 @@
 ---
 name: extrovert
-description: Conversationalist and editor that interviews the user about an idea or project and turns the conversation into posts for Medium and LinkedIn. Commands - configure, suggest, ideas, start, rename, conversation, editorial, post, voice. Use whenever the user wants to talk through an idea, write or post about something, needs a blog or LinkedIn post, or wants post ideas, and whenever they capture a raw idea ("idea: ...", "save this as an idea", a pasted link to keep for later).
+description: Conversationalist and editor that interviews the user about an idea or project and turns the conversation into posts for Medium and LinkedIn. Commands - configure, suggest, ideas, start, rename, conversation, editorial, post, voice, repos. Use whenever the user wants to talk through an idea, write or post about something, needs a blog or LinkedIn post, or wants post ideas, and whenever they capture a raw idea ("idea: ...", "save this as an idea", a pasted link to keep for later).
 ---
 
 # EXTROVERT
@@ -83,6 +83,17 @@ Input: an idea and/or links, or idea ids (`/extrovert start i-0004 i-0007`). For
 3. Compare the sample with the profile: say what still matches, what changed and what the profile misses, with short verbatim quotes as evidence (validate.py checks every evidence quote is in a sample).
 4. Show the profile diff (traits, person, humor, banned list, register drop lists and limits; mark which limits are mine and which are defaults). On my OK: write it with `version` + 1, the sample (path, `sha256`, `stats`) appended to `samples`, and one `history` line. Validate, commit `extrovert: voice: calibrate v<N>`, push.
 
+### repos (one-off per repo)
+`/extrovert repos [repo]`: paste-ready metadata for my public repos (forks excluded): the GitHub description and topics, and for PyPI packages the keywords, classifiers and a one-line pyproject note, plus the release tag and version scheme. `python scripts/repos.py` does the deterministic work (owner: `profile.json` contacts.github; settings: `config.json` -> `repos`).
+1. No repo named: `repos.py status`, then suggest for every repo it flags (no suggestion yet, or stale).
+2. `repos.py inputs <repo>`: the only material: GitHub metadata, tags and releases, PyPI metadata (only when it points back at the repo), the local clone's pyproject (a sibling folder), bragDoc entries that link it, published posts that name it. Describe only what the repo's README and the bragDoc support.
+3. Write the suggestion file: `## github description` (one line, public channel, voice rules), `## github topics` (space-separated, at most 20; include the site topic, `config.repos.site_topic`, default `portfolio`, when the repo should appear on my site), `## release` (tag format, version scheme, GitHub Releases), and for packages `## pypi keywords`, `## pypi classifiers` (PyPI's list only; no license classifier when the license is an SPDX expression) and `## pyproject note`: one line I forward to that repo's own session. Cockpit never edits another repo; I set topics and descriptions by hand.
+4. `repos.py check <repo> <file>`, fix everything, show me the paste-ready text, then `repos.py save <repo> <file>` (versioned under `data/extrovert/repos/<repo>/`, with a snapshot of tags, releases, PyPI version and posts). Validate, commit `extrovert: repos: <repo> v<N>`, push.
+
+`/extrovert repos applied <repo>` (also "I've set the topics"): `repos.py applied <repo> [--version N]`. Commit.
+
+**Re-check triggers:** a new tag, release or PyPI version, or a published post naming the repo. `repos.py status` detects all four; run it when I confirm a post is live, at the end of renovate and after every `/fourthwall publish`, and draft suggestions for whatever it flags.
+
 ### profiles (one-off per platform)
 `/extrovert profiles [linkedin|medium|github|all]`: generated, versioned profile copy. Pieces: LinkedIn headline, About and one Experience entry per role in `employment.json`; Medium bio and About page; GitHub bio. `python scripts/profiles.py` does all deterministic work.
 1. `profiles.py inputs`: the only material allowed. Public channel only: public entries (`public_summary`, `site_card`), roles, skill groups. **Current employer:** only `employment.json` `public_summary` + `public_context` (one generic line, team size, award), the same level as the public PDF, until I lift the rule (`config.profiles.current_employer_rule`).
@@ -108,4 +119,5 @@ Each post file is the post body, then a line `<!-- notes -->`, then everything t
 3. Append one item per platform to `meta.published` (never overwrite existing items): `platform`, `url`, `title`, `subtitle`, `published_date` (today from the system clock unless I give a date), `read_time_min`, `word_count`, `tags`, `cover_image_suggestion` (from the post's media suggestion), `excerpt` (first 1–2 sentences of the post, ≤ 40 words), `canonical` (true for the platform hosting the full piece; exactly one per conversation).
 4. Set `meta.related_entries` to the bragDoc entry ids the post is about, if any. Set `meta.status = "posted"`. For every idea in `meta.ideas`: `ideas.py status <id> posted --url <url> [--url <url>]` (all published URLs).
 5. Validate, commit `extrovert: post: <name> on <platforms>`, push.
-6. **Medium post → website.** In the background: `python scripts/runway.py await-post <medium-url>`. It polls the Medium feed every 2 min (30 min max) until the post appears, then triggers the site rebuild, waits for the production deploy and runs the live smoke tests. On timeout it rebuilds anyway; say the daily rebuild will catch it if Medium is slow. Report the result when it finishes, then commit RUNWAY's state (`runway: rebuild: <post> on the site`) and push.
+6. **Repo metadata.** `python scripts/repos.py status`: for every repo this post names, draft a fresh suggestion (`repos` above) and show it.
+7. **Medium post → website.** In the background: `python scripts/runway.py await-post <medium-url>`. It polls the Medium feed every 2 min (30 min max) until the post appears, then triggers the site rebuild, waits for the production deploy and runs the live smoke tests. On timeout it rebuilds anyway; say the daily rebuild will catch it if Medium is slow. Report the result when it finishes, then commit RUNWAY's state (`runway: rebuild: <post> on the site`) and push.

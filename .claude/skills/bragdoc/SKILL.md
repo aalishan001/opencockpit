@@ -108,6 +108,7 @@ Save the transcript (these answers included, like every other answer), fill `pro
    ```
    Then, automatically: `python scripts/runway.py publish --if-pending`. When any public payload changed, it ships to the site repo's `content` branch and prints the preview URL (add it to the output); otherwise it does nothing. It never touches `main`: promote stays manual (`/runway promote`), the one human gate before anything goes live.
    Then: `python scripts/profiles.py policy`, and add its reminder (if any) to the output: which profile pieces are stale and why (EXTROVERT `profiles`).
+   Then: `python scripts/repos.py status`, and add its reminder (if any): which public repos need fresh metadata suggestions (EXTROVERT `repos`).
 
 Items not yet probed stay in staging.
 

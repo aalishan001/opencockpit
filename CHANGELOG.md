@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.6 (2026-10-26)
+
+- EXTROVERT repo metadata: /extrovert repos suggests a paste-ready GitHub description and topics for each of your public repos (the site topic included when a repo belongs on your site), PyPI keywords and classifiers for packages, a release tag and version scheme, and a one-line note for the package's own session. scripts/repos.py gathers the inputs from the public GitHub and PyPI APIs, checks GitHub's topic rules and PyPI's official classifier list, versions every suggestion and flags a repo again after a new tag, release, PyPI version or a published post that names it.
+- RUNWAY previews exist only while something waits for approval: every promote deletes the branch it promoted, the next publish recreates the content branch from main, and runway.py prune deletes any other branch already merged into main while listing the rest with their commits.
+- Git rules: deleting a site branch fully merged into main is the one exception to never deleting branches.
+
 ## v0.2.5 (2026-10-26)
 
 - EXTROVERT voice profile: a versioned record of how you write (traits to keep, limit or drop, a raw and a public register, your banned phrases and patterns), stored next to the config and validated. /extrovert voice prints it as a drafting brief before every draft; /extrovert voice calibrate updates it from a questionnaire (templates/voice_questionnaire.md) and a fresh writing sample, measured by script. The persona example ships one.

@@ -30,6 +30,8 @@ I posted <conv> on <platform>: <url>   record it; Medium: wait for the feed, reb
 /extrovert profiles [platform|all]   LinkedIn headline/About/Experience, Medium + GitHub bios, versioned
 /extrovert profiles applied <platform|all>   record what I pasted
 /extrovert profiles status       latest vs applied, what's stale
+/extrovert repos [repo]         repo metadata: GitHub description + topics, PyPI keywords + classifiers, release scheme
+/extrovert repos applied <repo>  record what I set by hand
 
 ## bragDoc: achievements
 /bragdoc dump <text/files>      add items to staging
@@ -48,6 +50,7 @@ make <entry> public|private    set site visibility (natural language)
 /runway promote                 after I approve the preview: content → main (live), set published hashes, live tests
 /runway ship "<summary>"        site code change → gates → code/<slug> branch → preview URL
 /runway promote code/<slug>     after I approve that preview: → main (live), live tests
+/runway prune                   delete site branches already merged into main; show me any that aren't
 /runway showcase <ids>          homepage case studies (max 3; staging ids as intents)
 /runway status                  live vs pending, launch blockers, hook, feed health, freshness
 /runway rebuild                 deploy hook → wait for production → live smoke tests

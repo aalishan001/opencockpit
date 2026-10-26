@@ -504,9 +504,24 @@ def runway_data():
         gi = (ROOT / ".gitignore").read_text(encoding="utf-8") if (ROOT / ".gitignore").exists() else ""
         if hook not in gi.splitlines(): errors.append(f".gitignore must list {hook}")
 
+def repo_metadata():
+    """data/extrovert/repos/state.json: every recorded version has its v<N>.md, latest is the newest, applied exists."""
+    p = DATA / "extrovert/repos/state.json"
+    if not p.exists(): return
+    w = "extrovert/repos/state.json"
+    for name, r in (load_json("extrovert/repos/state.json", {}).get("repos") or {}).items():
+        vs = r.get("versions") or {}
+        for n, v in vs.items():
+            if not (DATA / f"extrovert/repos/{name}/v{n}.md").exists(): errors.append(f"{w}: {name} v{n} has no v{n}.md")
+            if not DATE.match(str(v.get("date", ""))) or not isinstance(v.get("snapshot"), dict): errors.append(f"{w}: {name} v{n} needs a date and a snapshot")
+        if vs and r.get("latest") != max(int(n) for n in vs): errors.append(f"{w}: {name} latest must be its newest version")
+        ap = r.get("applied")
+        if ap and str(ap.get("version")) not in vs: errors.append(f"{w}: {name} applied v{ap.get('version')} doesn't exist")
+
 def extrovert(eids):
     extrovert_config()
     voice_profile()
+    repo_metadata()
     idea_ids = ideas_log()
     for mp in sorted((DATA / "extrovert/conversations").glob("*/meta.json")):
         w = f"conversations/{mp.parent.name}/meta.json"

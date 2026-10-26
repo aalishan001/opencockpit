@@ -190,6 +190,38 @@ def test_extrovert():
     check("ideas add then list", rc == 0 and "index-only scans" in out2, out + out2)
     sb.close()
 
+# ---------------------------------------------------------------- extrovert: repo metadata
+def test_repos():
+    sb = Sandbox()
+    gh, pypi = "https://api.github.com", "https://pypi.org/pypi"
+    fx = {f"{gh}/users/example/repos?per_page=100&type=owner": [
+              {"name": "demo-pkg", "fork": False, "private": False, "topics": [], "description": "old"},
+              {"name": "a-fork", "fork": True, "private": False, "topics": [], "description": "fork"}],
+          f"{gh}/repos/example/demo-pkg/tags?per_page=100": [{"name": "v0.1.0"}],
+          f"{gh}/repos/example/demo-pkg/releases?per_page=100": [],
+          f"{pypi}/demo-pkg/json": {"info": {"version": "0.1.0", "classifiers": [], "project_urls": {"Repository": "https://github.com/example/demo-pkg"}},
+                                    "releases": {"0.1.0": []}},
+          "https://pypi.org/pypi?%3Aaction=list_classifiers": "Topic :: Database\nDevelopment Status :: 3 - Alpha\n"}
+    sb.write("fixture.json", json.dumps(fx))
+    os.environ["COCKPIT_REPOS_FIXTURE"] = str(sb.path("fixture.json"))
+    try:
+        good = ("## github description\nA small demo package that keeps tenants apart in PostgreSQL.\n\n## github topics\nportfolio postgresql\n\n"
+                "## pypi keywords\npostgresql, demo\n\n## pypi classifiers\nTopic :: Database\n\n## release\nTags vX.Y.Z.\n\n## pyproject note\nadd Topic :: Database.\n")
+        sb.write("s.md", good)
+        rc, out = sb.run("repos.py", "list"); check("repos: list skips forks", rc == 0 and "demo-pkg" in out and "a-fork" not in out, out)
+        rc, out = sb.run("repos.py", "check", "demo-pkg", str(sb.path("s.md"))); check("repos: a good suggestion passes", rc == 0, out)
+        sb.write("bad.md", good.replace("portfolio postgresql", "Portfolio").replace("Topic :: Database\n\n## release", "Topic :: Made Up\n\n## release"))
+        rc, out = sb.run("repos.py", "check", "demo-pkg", str(sb.path("bad.md")))
+        check("repos: bad topics and unknown classifiers are blocked", rc == 1 and "github topic 'Portfolio'" in out and "Made Up" in out, out)
+        rc, out = sb.run("repos.py", "save", "demo-pkg", str(sb.path("s.md")))
+        rc2, out2 = sb.run("repos.py", "status")
+        check("repos: save, then status is current", rc == 0 and "latest v1" in out2 and "current" in out2, out + out2)
+        fx[f"{gh}/repos/example/demo-pkg/tags?per_page=100"].insert(0, {"name": "v0.2.0"}); sb.write("fixture.json", json.dumps(fx))
+        rc, out = sb.run("repos.py", "status"); check("repos: a new tag makes the suggestion stale", "new tag v0.2.0" in out, out)
+    finally:
+        os.environ.pop("COCKPIT_REPOS_FIXTURE", None)
+    sb.close()
+
 # ---------------------------------------------------------------- fourthwall
 def test_fourthwall_journal():
     sb = Sandbox()

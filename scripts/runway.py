@@ -14,6 +14,7 @@ branches a preview URL. Everything specific to the site and its host lives in da
                                         tests), then a code/<slug> branch, commit, push, print the preview URL
   runway.py promote code/<slug>         after the user approves that preview: merge main in if it moved (gates again),
                                         fast-forward main, push
+  runway.py prune                       delete every site branch fully merged into main (local + origin); list the rest
   runway.py showcase <entry_id>...      homepage case studies (max 3; public; never the current employer's)
   runway.py showcase intent <staging_id> [--replaces <entry_id>]
                                         once that staging item is probed, renovated and public, its entry takes the place
@@ -287,6 +288,34 @@ def ship(summary, slug=None):
     print(f"Nothing is live until you approve the preview and run: runway.py promote {branch}")
     return 0 if push.returncode == 0 else 1
 
+def retire_branch(site, branch, main):
+    """Delete a site branch, locally and on origin, only when every commit on it is already in main (the user's rule,
+    2026-10-26: a preview exists only while something waits for approval). An unmerged branch is never touched."""
+    if git("rev-parse", "--verify", "-q", branch, cwd=site, check=False).returncode:
+        git("branch", "-q", "--track", branch, f"origin/{branch}", cwd=site, check=False)
+    if git("merge-base", "--is-ancestor", branch, main, cwd=site, check=False).returncode:
+        print(f"{branch}: has commits that aren't in {main}; kept (show them to the user before deleting)"); return False
+    git("branch", "-q", "-d", branch, cwd=site, check=False)
+    r = git("push", "-q", "origin", "--delete", branch, cwd=site, check=False)
+    print(f"{branch}: merged into {main}; deleted" + ("" if r.returncode == 0 else f" locally (remote: {r.stderr.strip()[:120]})"))
+    return True
+
+def prune():
+    """Every site branch other than main: delete the ones fully merged into main, list the rest with their commits."""
+    c = cfg(); site = site_dir(c); main = c["main_branch"]
+    git("fetch", "-q", "--prune", "origin", cwd=site)
+    names = sorted({l.strip().removeprefix("origin/") for l in git("branch", "-r", "--format=%(refname:short)", cwd=site).stdout.split()
+                    if l.strip().startswith("origin/") and not l.strip().endswith("/HEAD")} - {main, "origin"})
+    kept = []
+    for b in names:
+        if not retire_branch(site, b, main):
+            kept.append(b); print(git("log", "--oneline", f"origin/{main}..origin/{b}", cwd=site).stdout)
+    st = state()
+    for b, info in (st.get("ships") or {}).items():
+        if b in names and b not in kept: info["branch_deleted"] = now().date().isoformat()
+    save_state(st)
+    return 1 if kept else 0
+
 def promote_code(branch, wait=True):
     c, st = cfg(), state(); site = site_dir(c); main = c["main_branch"]
     info = (st.get("ships") or {}).get(branch) or die(f"{branch} wasn't shipped by runway.py ship")
@@ -317,6 +346,7 @@ def promote_code(branch, wait=True):
     push = git("push", "-q", "origin", main, cwd=site, check=False)
     if push.returncode: die(f"push failed: {push.stderr.strip()}")
     info.update(status="promoted", promoted=now().isoformat(timespec="seconds"), main_commit=git("rev-parse", main, cwd=site).stdout.strip())
+    if retire_branch(site, branch, main): info["branch_deleted"] = now().date().isoformat()
     st["ships"][branch] = info; save_state(st)
     print(f"Promoted {branch} to {main} ({info['main_commit'][:7]}). The host deploys {main} to production.")
     rc = after_deploy(c, before, f"promote {branch}") if wait else 0
@@ -386,6 +416,7 @@ def promote(initial=False, wait=True):
         before = live_stamp(c) if wait else None
         push = git("push", "origin", c["main_branch"], cwd=site, check=False)
         if push.returncode: die(f"push failed: {push.stderr.strip()}")
+        retire_branch(site, c["content_branch"], c["main_branch"])   # the next publish recreates it from main
     entries = read_jsonl(ENTRIES); live = 0
     for e in entries:
         if e["id"] in lp["entries"]: e["published_hash"] = lp["entries"][e["id"]]; live += 1
@@ -835,6 +866,7 @@ def main(a):
     if cmd == "promote": return promote(initial="--initial" in rest, wait="--no-wait" not in rest)
     if cmd == "ship" and rest and not rest[0].startswith("--"):
         return ship(rest[0], slug=rest[rest.index("--slug") + 1] if "--slug" in rest else None)
+    if cmd == "prune": return prune()
     if cmd == "showcase" and rest: return showcase(rest)
     if cmd == "status": return status()
     if cmd == "release" and rest == ["current-employer"]: return release_current()

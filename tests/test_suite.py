@@ -165,6 +165,25 @@ def test_extrovert():
     sb.write("clean.md", "Here is the fix, in four short steps.\n")
     rc, out = sb.run("voice_lint.py", str(sb.path("clean.md"))); check("voice lint passes clean text", rc == 0, out)
     rc, out = sb.run("post_stats.py", str(sb.path("clean.md"))); check("post_stats counts words", '"word_count": 8' in out, out)
+    # the voice profile (the persona's example) adds a banned list and register limits
+    sb.write("draft.md", "tbh i think this is CRAZY - we should ship it!!\n")
+    rc, out = sb.run("voice_lint.py", str(sb.path("draft.md")))
+    check("voice profile: the public register flags shorthand, caps, spaced hyphens and exclamations",
+          rc == 1 and all(x in out for x in ("chat shorthand", "lowercase 'i'", "capitals for emphasis", "spaced", "exclamation")), out)
+    rc, out = sb.run("voice_lint.py", str(sb.path("draft.md")), "--register", "raw")
+    check("voice profile: the raw register keeps them", rc == 0, out)
+    rc, out = sb.run("voice_lint.py", "--brief")
+    check("voice profile: --brief prints the public register", rc == 0 and "register: public" in out and "CHECK BY HAND" in out, out)
+    sb.write("post-v1-medium.md", "# Title\n\nWe can leverage the cache, imo.\n")
+    rc, out = sb.run("render.py", "post", str(sb.path("post-v1-medium.md")))
+    check("render.py post is blocked by the voice lint", rc == 1 and "BLOCKED" in out and not sb.path("post-v1-medium.html").exists(), out)
+    sb.write("post-v1-medium.md", "# Title\n\n## Subtitle\n\nThe fix moved the check into the database, and the next release shipped without the bug.\n")
+    rc, out = sb.run("render.py", "post", str(sb.path("post-v1-medium.md")))
+    html = sb.path("post-v1-medium.html")
+    check("render.py post writes the paste HTML", rc == 0 and html.exists() and "<h2>Subtitle</h2>" in html.read_text(encoding="utf-8"), out)
+    p = sb.read_json("data/extrovert/voice/profile.json"); p["registers"]["public"]["limits"]["sparkle"] = 1
+    sb.write_json("data/extrovert/voice/profile.json", p)
+    rc, out = sb.run("validate.py"); check("validate rejects an unknown voice limit", rc != 0 and "unknown limit 'sparkle'" in out, out)
     idea = {"raw": "idea: index-only scans", "gist": "When index-only scans help", "tags": ["postgres", "performance"], "context": "", "links": []}
     rc, out = sb.run("ideas.py", "add", "-", stdin=json.dumps(idea))
     rc2, out2 = sb.run("ideas.py", "list")

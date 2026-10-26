@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.5 (2026-10-26)
+
+- EXTROVERT voice profile: a versioned record of how you write (traits to keep, limit or drop, a raw and a public register, your banned phrases and patterns), stored next to the config and validated. /extrovert voice prints it as a drafting brief before every draft; /extrovert voice calibrate updates it from a questionnaire (templates/voice_questionnaire.md) and a fresh writing sample, measured by script. The persona example ships one.
+- Voice lint: on top of the ban list, the public register now caps capitals for emphasis, theatrical one-line paragraphs, question-and-answer pairs, exclamation marks, hashtags and habitual groups of three, and flags runs of same-length sentences, spaced-hyphen connectors and anything in the register's drop list (slang, shorthand, typography). --stats measures a text's rhythm for calibration.
+- Editorials and the new Medium paste file (render.py post) render only when the draft passes the voice lint and the public disclosure lint; a failure writes nothing. A paste sheet can sit above an 'article starts here' line, and the lints and word counts skip it.
+
 ## v0.2.4 (2026-10-15)
 
 - RUNWAY: verify-action --scheduled now prints the scheduled and deploy times instead of a function name.

@@ -25,6 +25,7 @@
 /end                            end the conversation
 /extrovert editorial [ref]      side-by-side transcript vs edited, iterate
 /extrovert post [platforms]     Medium (canonical) + LinkedIn summary
+/extrovert voice [calibrate]    voice profile brief; calibrate: questionnaire + fresh sample → new version
 I posted <conv> on <platform>: <url>   record it; Medium: wait for the feed, rebuild the site, live tests
 /extrovert profiles [platform|all]   LinkedIn headline/About/Experience, Medium + GitHub bios, versioned
 /extrovert profiles applied <platform|all>   record what I pasted

@@ -1,6 +1,6 @@
 ---
 name: extrovert
-description: Conversationalist and editor that interviews the user about an idea or project and turns the conversation into posts for Medium and LinkedIn. Commands - configure, suggest, ideas, start, rename, conversation, editorial, post. Use whenever the user wants to talk through an idea, write or post about something, needs a blog or LinkedIn post, or wants post ideas, and whenever they capture a raw idea ("idea: ...", "save this as an idea", a pasted link to keep for later).
+description: Conversationalist and editor that interviews the user about an idea or project and turns the conversation into posts for Medium and LinkedIn. Commands - configure, suggest, ideas, start, rename, conversation, editorial, post, voice. Use whenever the user wants to talk through an idea, write or post about something, needs a blog or LinkedIn post, or wants post ideas, and whenever they capture a raw idea ("idea: ...", "save this as an idea", a pasted link to keep for later).
 ---
 
 # EXTROVERT
@@ -16,8 +16,9 @@ Every transcript and edited version is saved and versioned under `data/extrovert
 - Polish structure and flow so it reads as poetically professional: confident, a bit of style, never corporate filler.
 - Never add claims or experiences I didn't state.
 - **My name** in a post or bio comes from `data/profile.json` → `names`: `short` by default, `public_full` only where a full name is genuinely required (an author credit). Never the formal form, never typed by hand.
-- Before every edit, read `data/extrovert/config.json`: `voice_notes` (lessons learned), `ban`, `allowed` and `defaults` (person, spelling, tag count). Respect `em_dash_max` (the example config sets it to zero: use commas, periods, colons or parentheses instead; en dashes in ranges like 5–10 s are fine).
-- Run `python scripts/voice_lint.py <file.md>` on every editorial and post version before showing it, and fix every violation. If I explicitly keep a flagged line, record that as a voice note.
+- **Load the voice profile before every draft** (editorial, post, profile copy), if `data/extrovert/voice/profile.json` exists: run `python scripts/voice_lint.py --brief` and follow it. It prints the public register: the traits to keep, limit and drop, my rules for person and humor, the limits the lint enforces, the banned list, and the checks the lint can't do. Transcripts are the raw register and are never linted. No profile yet: `/extrovert voice calibrate` creates one.
+- Also read `data/extrovert/config.json`: `voice_notes` (lessons learned), `ban`, `allowed` and `defaults` (person, spelling, tag count). The profile's banned list adds to `ban.phrases`. Respect `em_dash_max` (the example config sets it to zero: use commas, periods, colons or parentheses instead; en dashes in ranges like 5–10 s are fine). A voice sample is style, never facts: nothing in a draft comes from a sample's claims.
+- Run `python scripts/voice_lint.py <file.md>` (public register by default) on every editorial and post version before showing it, and fix every violation. **Rendering is blocked if it fails:** `render.py editorial` and `render.py post` run the voice lint and the public disclosure lint first and write nothing on a failure. If I explicitly keep a flagged line, record that as a voice note.
 - **Learn from my corrections.** Each time I correct the voice during editorial, append one lesson to `config.voice_notes` as `{date, lesson, conversation}` and commit it with that round. Never invent lessons I didn't give.
 - **Never discuss my current employer's details or projects.** Current employer = the role in `data/bragdoc/employment.json` with `end: null`. In conversation, steer away; in editorial and posts, cut it; `related_entries` never points at that employer's entries.
 
@@ -73,6 +74,15 @@ Input: an idea and/or links, or idea ids (`/extrovert start i-0004 i-0007`). For
 2. Default length: what typical readers of this topic on the target platform expect. State the target word count.
 3. I request in-place edits ("para 3: tighten", "keep my line about X"). Each round saves the next version. Never overwrite old versions.
 
+### voice (one-off)
+`/extrovert voice`: print the drafting brief, `python scripts/voice_lint.py --brief [--register raw]`. No commit.
+
+`/extrovert voice calibrate` (back and forth; ends when the new version is saved): create or re-calibrate the profile from `templates/voice_questionnaire.md` (schema in `scripts/schemas.md`; `examples/persona/data/extrovert/voice/profile.json` is a worked example).
+1. Send me the questionnaire in one message (the questions only). I answer, with a fresh unedited sample.
+2. Save the sample verbatim to `raw/extrovert/voice/<YYYYMMDD-HHMM>-<name>.md` (never edited, never deleted) and measure it: `python scripts/voice_lint.py --stats <file>`. Take style from it, never facts.
+3. Compare the sample with the profile: say what still matches, what changed and what the profile misses, with short verbatim quotes as evidence (validate.py checks every evidence quote is in a sample).
+4. Show the profile diff (traits, person, humor, banned list, register drop lists and limits; mark which limits are mine and which are defaults). On my OK: write it with `version` + 1, the sample (path, `sha256`, `stats`) appended to `samples`, and one `history` line. Validate, commit `extrovert: voice: calibrate v<N>`, push.
+
 ### profiles (one-off per platform)
 `/extrovert profiles [linkedin|medium|github|all]`: generated, versioned profile copy. Pieces: LinkedIn headline, About and one Experience entry per role in `employment.json`; Medium bio and About page; GitHub bio. `python scripts/profiles.py` does all deterministic work.
 1. `profiles.py inputs`: the only material allowed. Public channel only: public entries (`public_summary`, `site_card`), roles, skill groups. **Current employer:** only `employment.json` `public_summary` + `public_context` (one generic line, team size, award), the same level as the public PDF, until I lift the rule (`config.profiles.current_employer_rule`).
@@ -90,7 +100,7 @@ From the latest editorial, produce `post-v<N>-<platform>.md` for each requested 
 - **Medium (canonical: the full piece):** title, subtitle, full article, section headers, 3–5 tags, image suggestions.
 - **LinkedIn (native summary):** hook in the first 2 lines, short paragraphs, 3–5 hashtags, a media suggestion (image, carousel, or diagram plus what it should show). The Medium link goes in the first comment, not the post body; put the comment text in the notes.
 
-Each post file is the post body, then a line `<!-- notes -->`, then everything that isn't the post (media suggestion, tags, first-comment text). Run `voice_lint.py` on each file before showing it. Canonical is Medium unless `config.notes` says otherwise (for example once your site gains a posts page: site-first, Medium import with a canonical link).
+Each post file is the post body, then a line `<!-- notes -->`, then everything that isn't the post (media suggestion, tags, first-comment text). A paste sheet may sit above an `<!-- article starts here -->` line; reminders and photo placeholders go in HTML comments or image placeholders, which the lints and word counts skip. Run `voice_lint.py` on each file before showing it. The Medium paste file comes only from `python scripts/render.py post <post-v<N>-medium.md>` (gated: blocked on any voice or public-channel failure). Canonical is Medium unless `config.notes` says otherwise (for example once your site gains a posts page: site-first, Medium import with a canonical link).
 
 **When I confirm a post is live** (also when I say "I posted <conversation> on <platform>: <url>"):
 1. Ask for the URL of every posted platform in one message (skip if I already gave them).

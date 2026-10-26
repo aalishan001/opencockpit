@@ -32,7 +32,7 @@ you: chat, files, phone photos
 | Domain | What it does |
 |---|---|
 | **bragDoc** | A probed, metric-backed record of your work: brain dumps go to staging, a probe interviews you until each item has a problem, an action, a result and real numbers, and renovate ranks the entries and renders the bragDoc. |
-| **EXTROVERT** | Interviews you about an idea and edits the transcript into posts in your own voice (Medium, plus a LinkedIn summary). Keeps an ideas backlog and versioned profile copy. |
+| **EXTROVERT** | Interviews you about an idea and edits the transcript into posts in your own voice (Medium, plus a LinkedIn summary), held to a voice profile and its lint. Keeps an ideas backlog and versioned profile copy. |
 | **RUNWAY** | Ships the bragDoc's public channel to your own site repo: a preview branch first, live only after you approve it, then live tests against production. |
 | **FOURTHWALL** | Documents the system itself (journal, changelog, this README) and exports the public copy you are reading. |
 | **CHASSIS** | An example domain: vehicle maintenance from the manual, service slips and odometer readings. |

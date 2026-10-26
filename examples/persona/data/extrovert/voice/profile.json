@@ -1,0 +1,67 @@
+{
+ "version": 1,
+ "updated": "2026-10-01",
+ "source": "example: a fictional persona's answers to templates/voice_questionnaire.md (no sample stored; add yours under raw/extrovert/voice/)",
+ "samples": [],
+ "traits": [
+  {"id": "short_paragraphs", "name": "Short paragraphs", "description": "Two or three sentences per paragraph, one idea each.", "public": "keep", "evidence": [], "source": "user"},
+  {"id": "worked_example", "name": "A worked example first", "description": "Shows a concrete query, command or number before the general rule.", "public": "keep", "evidence": [], "source": "user"},
+  {"id": "rhetorical_questions", "name": "Rhetorical questions", "description": "Asks the reader's question out loud, then answers it.", "public": "limit", "public_note": "at most 3 question-and-answer pairs per post", "evidence": [], "source": "user"},
+  {"id": "dry_humor", "name": "Dry humor", "description": "One understated joke, usually about the bug, never about a person.", "public": "limit", "public_note": "at most one per post", "evidence": [], "source": "user"},
+  {"id": "chat_shorthand", "name": "Chat shorthand", "description": "'tbh', 'imo' and lowercase 'i' in notes and transcripts.", "public": "drop", "evidence": [], "source": "user"}
+ ],
+ "person": {"employer_work": "we", "personal_work": "I", "source": "user"},
+ "humor": {"style": "dry, about the bug", "public": "at most one joke per post", "source": "user"},
+ "self_descriptions": {"banned": "'guru', 'ninja', 'rockstar'", "rule": "describe the work, not the person", "source": "user"},
+ "registers": {
+  "raw": {
+   "description": "Notes and interview transcripts, as typed. Never published as is.",
+   "platforms": [],
+   "limits": {},
+   "drop": []
+  },
+  "public": {
+   "description": "Medium and LinkedIn: plain, specific and calm. Short paragraphs, a worked example first, no shorthand.",
+   "platforms": ["medium", "linkedin"],
+   "rules": [
+    "Lead with a concrete example, then the rule.",
+    "At most one joke per post, about the bug, never a person.",
+    "No capitals for emphasis; use a short sentence instead."
+   ],
+   "limits": {
+    "caps_emphasis": 0,
+    "one_line_paragraphs": 2,
+    "one_line_words": 10,
+    "qa_pairs": 3,
+    "exclamations": 0,
+    "hashtags": 4,
+    "triads": 3,
+    "same_length_run": {"sentences": 5, "spread_words": 2},
+    "spaced_hyphen": false
+   },
+   "limit_sources": {"user": ["caps_emphasis", "exclamations", "hashtags"], "default": ["one_line_paragraphs", "one_line_words", "qa_pairs", "triads", "same_length_run", "spaced_hyphen"]},
+   "drop": [
+    {"id": "shorthand", "label": "chat shorthand", "regex": "\\b(?:tbh|imo|imho|ngl|lol)\\b"},
+    {"id": "lowercase_i", "label": "lowercase 'i'", "regex": "(?<![\\w'.(-])i(?![\\w.)-])", "case_sensitive": true}
+   ],
+   "caps_allow": []
+  }
+ },
+ "banned": {
+  "phrases": ["delve", "synergy", "cutting-edge", "at the end of the day", "in conclusion"],
+  "patterns": [
+   {"id": "leverage_verb", "label": "leverage (as a verb)", "regex": "\\bleverag(?:es|ed|ing)\\b|\\b(?:to|we|can|will)\\s+leverage\\b"}
+  ],
+  "constructions": ["not_just_x_its_y", "emoji", "hashtag_wall"],
+  "source": "user"
+ },
+ "checklist": [
+  "One worked example before the general rule.",
+  "'We' for employer work, 'I' for personal work.",
+  "Every number from my notes or a cited source."
+ ],
+ "recalibration": {"questionnaire": "templates/voice_questionnaire.md", "command": "/extrovert voice calibrate"},
+ "history": [
+  {"version": 1, "date": "2026-10-01", "change": "created from the questionnaire", "source": "user"}
+ ]
+}

@@ -7,6 +7,9 @@ channel (data/bragdoc/disclosure_policy.json) and is linted before it is written
 <name> is the channel's name form from profile.json -> names (policy channels.<c>.names.form), spaces as underscores.
 An all-caps name is CSS text-transform on h1.name; the text itself is never changed.
   render.py editorial <folder> <N>   -> <folder>/editorial-v<N>.html (side by side)
+  render.py post <post-file.md>      -> <post-file>.html beside it: clean HTML to paste into Medium
+Editorials and posts are public drafts: both are blocked unless the file passes voice_lint.py (public register) and
+the public disclosure lint.
 """
 import html, json, os, re, shutil, subprocess, sys, tempfile, pathlib
 from collections import defaultdict
@@ -242,9 +245,22 @@ def md_to_html(md):
     if in_list: out.append("</ul>")
     return "\n".join(out)
 
+def voice_gate(md_path):
+    """A public draft must pass the voice lint (public register: config ban list + voice profile) and the public
+    disclosure lint before anything is rendered from it. Any failure prints the problems and writes nothing."""
+    import voice_lint
+    problems = voice_lint.lint_file(md_path, "public")
+    found = lint_text(voice_lint.post_body(pathlib.Path(md_path).read_text(encoding="utf-8")), "public")
+    if problems or found:
+        print(f"BLOCKED: {pathlib.Path(md_path).name} fails the voice lint or the public channel; nothing written.")
+        if problems: print("voice lint:\n  " + "\n  ".join(problems))
+        if found: print("public channel:\n" + lint_report(found))
+        sys.exit(1)
+
 def editorial(folder, n):
     from pathlib import Path
     d = Path(folder); d = d if d.is_absolute() else ROOT / d
+    voice_gate(d / f"editorial-v{n}.md")
     left = md_to_html((d / "transcript.md").read_text(encoding="utf-8"))
     right = md_to_html((d / f"editorial-v{n}.md").read_text(encoding="utf-8"))
     css = ("body{font-family:Georgia,serif;margin:0} .grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;padding:2rem}"
@@ -255,8 +271,71 @@ def editorial(folder, n):
            f"<div class='col'><h1>Edited v{n}</h1>{right}</div></div></body></html>")
     p = d / f"editorial-v{n}.html"; p.write_text(doc, encoding="utf-8"); print(p)
 
+def medium_html(md):
+    """Post markdown -> clean HTML for one select-all paste into Medium: '# ' title -> h1, the first '## ' (the subtitle)
+    -> h2, later '## ' -> h3, '### ' -> h4; paragraphs, - and 1. lists, > quotes, fenced code kept verbatim in <pre>,
+    **bold**, *italic*, `code`, [text](url). An image line becomes a visible "[Image: <alt>]" placeholder to swap for the
+    photo in Medium's editor; HTML comments (reminders) are left out."""
+    def inline(s):
+        res = []
+        for part in re.split(r"(`[^`]+`)", s):
+            if part.startswith("`") and part.endswith("`") and len(part) > 1: res.append(f"<code>{esc(part[1:-1])}</code>"); continue
+            part = esc(part, quote=False)
+            part = re.sub(r"\[([^\]]+)\]\((https?://[^)\s]+)\)", lambda m: f'<a href="{esc(m.group(2))}">{m.group(1)}</a>', part)
+            part = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", part)
+            res.append(re.sub(r"(?<![\w*])\*([^*\n]+)\*(?![\w*])", r"<em>\1</em>", part))
+        return "".join(res)
+    lines = re.sub(r"<!--.*?-->", "", md, flags=re.S).split("\n")
+    i, blocks, title, seen_h2 = 0, [], "", False
+    while i < len(lines):
+        ln = lines[i]
+        if ln.startswith("```"):
+            j = i + 1
+            while j < len(lines) and not lines[j].startswith("```"): j += 1
+            blocks.append("<pre><code>" + esc("\n".join(lines[i + 1:j])) + "</code></pre>"); i = j + 1; continue
+        if not ln.strip(): i += 1; continue
+        m = re.match(r"^\s*!\[([^\]]*)\]", ln)
+        if m: blocks.append(f"<p><strong>[Image: {esc(m.group(1))}]</strong></p>"); i += 1; continue
+        m = re.match(r"^(#{1,3}) (.+)$", ln)
+        if m:
+            lvl = len(m.group(1)); tag = {1: "h1", 2: "h3" if seen_h2 else "h2", 3: "h4"}[lvl]
+            seen_h2 |= lvl == 2; title = title or (m.group(2) if lvl == 1 else "")
+            blocks.append(f"<{tag}>{inline(m.group(2))}</{tag}>"); i += 1; continue
+        if ln.startswith("> "):
+            q = []
+            while i < len(lines) and lines[i].startswith("> "): q.append(lines[i][2:]); i += 1
+            blocks.append("<blockquote>" + inline(" ".join(q)) + "</blockquote>"); continue
+        if re.match(r"^(- |\d+\. )", ln):
+            ordered = bool(re.match(r"^\d+\. ", ln)); items = []
+            while i < len(lines) and re.match(r"^\d+\. " if ordered else r"^- ", lines[i]):
+                items.append(re.sub(r"^(\d+\. |- )", "", lines[i])); i += 1
+            tag = "ol" if ordered else "ul"
+            blocks.append(f"<{tag}>" + "".join(f"<li>{inline(x)}</li>" for x in items) + f"</{tag}>"); continue
+        para = []
+        while i < len(lines) and lines[i].strip() and not re.match(r"^(#{1,3} |```|> |- |\d+\. |\s*!\[)", lines[i]):
+            para.append(lines[i]); i += 1
+        blocks.append("<p>" + inline(" ".join(para)) + "</p>")
+    css = ("body{max-width:720px;margin:48px auto;padding:0 20px;font:18px/1.6 Georgia,serif;color:#1a1a1a;background:#fff}"
+           "h1{font:700 36px/1.2 system-ui,sans-serif} h2{font:400 22px/1.4 system-ui,sans-serif;color:#555}"
+           "h3{font:700 24px/1.3 system-ui,sans-serif;margin-top:40px} h4{font:700 20px/1.3 system-ui,sans-serif}"
+           "pre{background:#f2f2f2;padding:16px;overflow-x:auto;font:14px/1.5 ui-monospace,Consolas,monospace}"
+           "code{font-family:ui-monospace,Consolas,monospace;font-size:.9em}"
+           "blockquote{border-left:3px solid #1a1a1a;margin-left:0;padding-left:20px;font-style:italic}")
+    return (f"<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n"
+            f"<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>{esc(title or 'Post')}</title>\n"
+            f"<style>{css}</style>\n</head>\n<body>\n" + "\n".join(blocks) + "\n</body>\n</html>\n")
+
+def post(md_file):
+    """A post file -> <same folder>/<stem>.html for pasting into Medium, behind the voice and public-channel gates."""
+    import voice_lint
+    p = pathlib.Path(md_file); p = p if p.is_absolute() else ROOT / p
+    voice_gate(p)
+    out = p.with_suffix(".html")
+    out.write_text(medium_html(voice_lint.post_body(p.read_text(encoding="utf-8"))), encoding="utf-8", newline="\n"); print(out)
+
+
 if __name__ == "__main__":
     a = sys.argv[1:]
     if not a: print(__doc__); sys.exit(1)
     {"bragdoc": lambda: bragdoc(), "resume-extensive": lambda: resume_extensive(), "public-resume": lambda: public_resume(),
-     "editorial": lambda: editorial(a[1], a[2])}.get(a[0], lambda: (print(__doc__), sys.exit(1)))()
+     "editorial": lambda: editorial(a[1], a[2]), "post": lambda: post(a[1])}.get(a[0], lambda: (print(__doc__), sys.exit(1)))()

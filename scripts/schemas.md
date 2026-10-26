@@ -185,7 +185,33 @@ Public entries only. `highlight` appears on at most `max_highlights` entries (`s
 ```
 - `news_fields`: list of strings (search clusters). `platforms` keys: `medium|linkedin` only.
 - `voice_notes`: lessons learned from editorial corrections, each with `lesson` and `date`. Starts empty.
-- `ban` is enforced by `scripts/voice_lint.py <file.md>` (exit 1 on any violation).
+- `ban` is enforced by `scripts/voice_lint.py <file.md>` (exit 1 on any violation), together with the voice profile below.
+
+`data/extrovert/voice/profile.json` (the voice profile; written by the user's answers and `/extrovert voice calibrate`; validated):
+```json
+{"version": 1, "updated": "YYYY-MM-DD", "source": "raw/extrovert/voice/<sample> (style only) + user",
+ "samples": [{"file": "raw/extrovert/voice/<YYYYMMDD-HHMM>-<name>.md", "sha256": "<hex>", "added": "YYYY-MM-DD",
+              "use": "style only, never facts", "stats": {}, "source": "user"}],
+ "traits": [{"id": "rhythm", "name": "", "description": "", "public": "keep|limit|drop", "public_note": "",
+             "evidence": ["verbatim quote from a sample"], "source": "user|sample|user + sample"}],
+ "person": {"employer_work": "we", "personal_work": "I", "source": "user"}, "humor": {}, "self_descriptions": {},
+ "registers": {"raw": {"description": "", "platforms": [], "limits": {}, "drop": []},
+               "public": {"description": "", "platforms": ["medium", "linkedin"], "rules": [""],
+                          "limits": {"caps_emphasis": 1, "one_line_paragraphs": 1, "one_line_words": 12, "qa_pairs": 2,
+                                     "exclamations": 1, "hashtags": 5, "triads": 2,
+                                     "same_length_run": {"sentences": 4, "spread_words": 2}, "spaced_hyphen": false},
+                          "limit_sources": {"user": [], "default": []},
+                          "drop": [{"id": "slang", "label": "slang", "regex": "", "case_sensitive": false}],
+                          "caps_allow": ["NAME", "MULTI. WORD. NAME."]}},
+ "banned": {"phrases": [], "patterns": [{"id": "", "label": "", "regex": ""}], "constructions": ["not_just_x_its_y"], "source": "user"},
+ "checklist": ["checks the lint can't do"], "recalibration": {"questionnaire": "templates/voice_questionnaire.md"},
+ "history": [{"version": 1, "date": "YYYY-MM-DD", "change": "", "source": "user"}]}
+```
+- required: `version` (int ≥ 1, equal to the latest `history` version), `updated`, `source`, `traits`, `registers` (≥ 1), `banned`, `history` (each item `version`, `date`, `change`, `source`).
+- `samples[].file` under `raw/extrovert/voice/` (verbatim, never edited); its `sha256` must match the file. Samples are style, never facts. `stats` come from `voice_lint.py --stats`, never estimated.
+- `traits[]`: unique `id`; `public` is `keep`, `limit` (`public_note` says how far) or `drop`; every `evidence` string must appear verbatim in a sample.
+- `registers.<name>.limits`: only the keys above (ints ≥ 0; `same_length_run` = ≥ `sentences` consecutive sentences whose lengths differ by ≤ `spread_words` words; `spaced_hyphen: false` flags " - " connectors). A missing key = no limit. `drop[].regex` and `banned.patterns[].regex` must compile (`case_sensitive` defaults to false). `caps_allow`: all-caps names that aren't emphasis (a single word, or an exact phrase). `banned.constructions` ⊆ the lint's known checks.
+- `voice_lint.py <file>` applies `config.ban` + `banned` + the register's limits (public by default); `--brief` prints the drafting brief; `render.py editorial` and `render.py post` are blocked when it fails.
 
 
 `data/extrovert/profiles/<platform>/v<N>.md` (linkedin, medium, github): profile copy, `## <section>` per piece (linkedin: `headline`, `about`, `experience: <employer> · <role>` for every role in employment.json; medium: `bio`, `about`; github: `bio`). Written only by `profiles.py save` after its gates. `data/extrovert/profiles/state.json`: per platform `{latest, versions {N: {date, snapshot {top_impact {id: payload hash}, top5 [ids], job [[employer, role, start]], skill_groups [..]}}}, applied {version, date}}` plus `last_reminded`. Config: `data/extrovert/config.json` → `profiles {limits {linkedin {headline, about, experience}, medium {bio, about}, github {bio}, checked, sources, note}, policy {throttle_days, exempt, top_impact_min, triggers {trigger: [platform.piece]}, source}, current_employer_rule, role_attribution {source, "<employer> · <role>": [entry ids]}}` (the user's answers on which role an entry belongs to when its dates don't say).

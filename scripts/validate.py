@@ -302,6 +302,66 @@ def extrovert_config():
     ban = cfg.get("ban", {})
     if not isinstance(ban.get("phrases", []), list): errors.append(f"{w}: ban.phrases must be a list")
 
+def voice_profile():
+    """data/extrovert/voice/profile.json (optional): registers with known limits, compilable regexes, samples in
+    raw/extrovert/voice/ unchanged since they were added (by hash), evidence quoted verbatim from a sample, history."""
+    import hashlib
+    from _common import ROOT
+    from voice_lint import LIMITS, CONSTRUCTIONS
+    if not (DATA / "extrovert/voice/profile.json").exists(): return
+    p, w = load_json("extrovert/voice/profile.json", {}), "extrovert/voice/profile.json"
+    need(p, ["version", "updated", "source", "traits", "registers", "banned", "history"], w)
+    if not isinstance(p.get("version"), int) or p.get("version", 0) < 1: errors.append(f"{w}: version must be an integer >= 1")
+    if not DATE.match(str(p.get("updated", ""))): errors.append(f"{w}: updated must be YYYY-MM-DD")
+    def regex(rx, where):
+        try: re.compile(rx)
+        except (re.error, TypeError) as e: errors.append(f"{where}: invalid regex: {e}")
+    texts = []
+    for i, s in enumerate(p.get("samples", [])):
+        sw, f = f"{w}: samples[{i}]", str(s.get("file", ""))
+        if not f.startswith("raw/extrovert/voice/"): errors.append(f"{sw}.file must be under raw/extrovert/voice/"); continue
+        if not s.get("use") or not DATE.match(str(s.get("added", ""))): errors.append(f"{sw}: needs use and added (YYYY-MM-DD)")
+        fp = ROOT / f
+        if fp.is_file():
+            if hashlib.sha256(fp.read_bytes()).hexdigest() != s.get("sha256"): errors.append(f"{sw}: {f} doesn't match its sha256 (a sample never changes)")
+            texts.append(fp.read_text(encoding="utf-8"))
+        elif (ROOT / "raw").is_dir(): errors.append(f"{sw}: {f} is missing")
+    ids = set()
+    for i, t in enumerate(p.get("traits", [])):
+        tw = f"{w}: traits[{i}]"
+        need(t, ["id", "name", "description", "public", "source"], tw)
+        if t.get("id") in ids: errors.append(f"{tw}: duplicate id '{t.get('id')}'")
+        ids.add(t.get("id"))
+        if t.get("public") not in ("keep", "limit", "drop"): errors.append(f"{tw}.public must be keep|limit|drop")
+        for e in t.get("evidence", []) if texts else []:
+            if not any(e in x for x in texts): errors.append(f"{tw}: evidence not quoted verbatim from a sample: {e[:60]!r}")
+    regs = p.get("registers", {})
+    if not isinstance(regs, dict) or not regs: errors.append(f"{w}: registers must name at least one register"); regs = {}
+    for name, r in regs.items():
+        rw = f"{w}: registers.{name}"
+        if not r.get("description"): errors.append(f"{rw}: needs a description")
+        for pl in r.get("platforms", []):
+            if pl not in PLATFORMS: errors.append(f"{rw}.platforms: '{pl}' is not a post target")
+        for k, v in (r.get("limits") or {}).items():
+            if k not in LIMITS: errors.append(f"{rw}.limits: unknown limit '{k}' (known: {', '.join(sorted(LIMITS))})")
+            elif not isinstance(v, LIMITS[k]) or (LIMITS[k] is int and (isinstance(v, bool) or v < 0)):
+                errors.append(f"{rw}.limits.{k} must be a{' non-negative' if LIMITS[k] is int else ''} {LIMITS[k].__name__}")
+        run = (r.get("limits") or {}).get("same_length_run")
+        if isinstance(run, dict) and not all(isinstance(run.get(k), int) and run[k] >= 0 for k in ("sentences", "spread_words")):
+            errors.append(f"{rw}.limits.same_length_run needs integer sentences and spread_words")
+        for j, d in enumerate(r.get("drop", [])):
+            need(d, ["id", "label", "regex"], f"{rw}.drop[{j}]"); regex(d.get("regex"), f"{rw}.drop[{j}]")
+    b = p.get("banned", {})
+    if not isinstance(b.get("phrases", []), list): errors.append(f"{w}: banned.phrases must be a list")
+    for j, pt in enumerate(b.get("patterns", [])):
+        need(pt, ["id", "label", "regex"], f"{w}: banned.patterns[{j}]"); regex(pt.get("regex"), f"{w}: banned.patterns[{j}]")
+    for c in b.get("constructions", []):
+        if c not in CONSTRUCTIONS: errors.append(f"{w}: banned.constructions: unknown '{c}' (known: {', '.join(sorted(CONSTRUCTIONS))})")
+    hist = p.get("history", [])
+    if not hist or any(not (isinstance(h.get("version"), int) and DATE.match(str(h.get("date", ""))) and h.get("change") and h.get("source")) for h in hist):
+        errors.append(f"{w}: history needs items {{version, date, change, source}}")
+    elif max(h["version"] for h in hist) != p.get("version"): errors.append(f"{w}: version must equal the latest history version")
+
 IDEA_EVENTS, IDEA_STATUS = {"add", "edit", "status", "merge"}, {"new", "developing", "posted", "parked", "dropped", "merged"}
 IDEA_ID, IDEA_FIELDS = re.compile(r"^i-\d{4}$"), {"raw", "gist", "tags", "context", "links", "sensitive"}
 
@@ -446,6 +506,7 @@ def runway_data():
 
 def extrovert(eids):
     extrovert_config()
+    voice_profile()
     idea_ids = ideas_log()
     for mp in sorted((DATA / "extrovert/conversations").glob("*/meta.json")):
         w = f"conversations/{mp.parent.name}/meta.json"

@@ -119,8 +119,9 @@ def ym(s):
 def ranked(es): return sorted(es, key=lambda e: -e["rank_score"])
 
 def visible(channel):
-    """Entries a channel may show: the public channel only ever sees visibility "public"; the others see everything."""
-    es = read_jsonl(DATA / "bragdoc/entries.jsonl")
+    """Entries a channel may show: the public channel only ever sees visibility "public"; the others see everything.
+    An entry's exclude_channels (the user's word, e.g. ["resume"]) keeps it out of those channels."""
+    es = [e for e in read_jsonl(DATA / "bragdoc/entries.jsonl") if channel not in (e.get("exclude_channels") or [])]
     return [e for e in es if e.get("visibility") == "public"] if channel == "public" else es
 
 def by_category(channel="internal"):

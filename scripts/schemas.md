@@ -80,6 +80,7 @@ All `.jsonl` files: one JSON object per line. Dates are `YYYY-MM-DD`. Timestamps
 - **Public layer** (what RUNWAY ships to the site; written only by renovate and the bragdoc_public.py commands):
   - `kind` **required**: `work` (employer/client) | `personal_project` (mine, not a product) | `product` (has users or a landing page) | `open_source` (contributions to others' repos) | `community` (teaching, volunteering, competitions, clubs, podcast; category "Community & Leadership")
   - `visibility` **required**: `private` (default) | `public`. Changed only by `bragdoc_public.py set-visibility`, only on explicit instruction.
+  - `exclude_channels` optional list of `resume` | `public`, set only on the user's word: the entry never appears in those channels' renders (`render.py`). The internal bragDoc always shows it.
   - `links` **required object** (may be `{}`): optional keys `repo`, `live`, `landing`, `demo`, `docs` (each `""` or an `https://` URL) and `other` (list of `{label, url}`, both required, url `https://`). Non-work kinds are expected to have at least one of repo/live/landing; if missing, `missing-links --add-questions` queues a question (not a validation error).
   - `public_constraints` **required list of strings** (may be `[]`): things stated during probing that must not be public.
   - `resume_summary` optional until generated: same structure and `source_hash` machinery as `public_summary`, written under the resume channel's rules (`disclosure_policy.json`). Written only via `bragdoc_public.py set-summary <id> '<json>' --channel resume`.

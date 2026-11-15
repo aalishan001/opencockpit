@@ -268,6 +268,9 @@ def check_links(links, w):
 def public_layer(e, w):
     if e.get("kind") not in KINDS: errors.append(f"{w}: kind must be one of {sorted(KINDS)}")
     if e.get("visibility") not in VISIBILITY: errors.append(f"{w}: visibility must be private|public")
+    xc = e.get("exclude_channels", [])
+    if not isinstance(xc, list) or any(c not in ("resume", "public") for c in xc):
+        errors.append(f"{w}: exclude_channels must be a list of resume|public")
     if "links" not in e: errors.append(f"{w}: missing 'links' (use {{}})")
     else: check_links(e["links"], f"{w}: links")
     pc = e.get("public_constraints")

@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.3.1 (2026-11-15)
+
+- bragDoc channels: an entry can carry exclude_channels (resume, public), set only on your word, to keep it out of those renders while the internal bragDoc still shows it; validate.py checks the field.
+
 ## v0.3.0 (2026-11-15)
 
 - EXTROVERT on dev.to: dev.to is the default long-form platform. render.py post --devto writes a dev.to paste file with front matter (title, draft flag, description, at most 4 tags, canonical URL, series), and scripts/devto.py drafts, updates and publishes articles through the dev.to API, with the API key kept in the OS keychain and every publish behind the voice and public lints. Medium stays supported as a platform.

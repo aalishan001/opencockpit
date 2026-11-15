@@ -6,8 +6,8 @@
   "AI developer tools"
  ],
  "platforms": {
-  "medium": "canonical: the full piece",
-  "linkedin": "native summary; the Medium link goes in the first comment"
+  "devto": "canonical: the full piece",
+  "linkedin": "native summary; the dev.to link goes in the first comment"
  },
  "voice_notes": [],
  "ban": {
@@ -41,9 +41,13 @@
    "min": 3,
    "max": 5,
    "applies_to": [
-    "medium",
+    "devto",
     "linkedin"
-   ]
+   ],
+   "max_by_platform": {
+    "devto": 4
+   },
+   "devto_format": "dev.to tags: at most 4, lowercase letters and digits only (no spaces or hyphens)"
   }
  },
  "exclusions": {

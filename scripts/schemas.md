@@ -178,12 +178,12 @@ Public entries only. `highlight` appears on at most `max_highlights` entries (`s
 `data/extrovert/config.json` (written by `configure`; validated):
 ```json
 {"source": "user", "updated": "YYYY-MM-DD", "news_fields": ["..."],
- "platforms": {"medium": "canonical", "linkedin": "native summary"},
+ "platforms": {"devto": "canonical", "linkedin": "native summary"},
  "voice_notes": [{"date": "YYYY-MM-DD", "lesson": "", "conversation": "<folder>"}],
  "ban": {"phrases": [], "engagement_bait": [], "emoji": true, "not_just_x_its_y": true, "em_dash_max": 0},
  "allowed": [], "defaults": {}, "exclusions": {}, "notes": []}
 ```
-- `news_fields`: list of strings (search clusters). `platforms` keys: `medium|linkedin` only.
+- `news_fields`: list of strings (search clusters). `platforms` keys: `devto|linkedin|medium` only (one of devto or medium is canonical).
 - `voice_notes`: lessons learned from editorial corrections, each with `lesson` and `date`. Starts empty.
 - `ban` is enforced by `scripts/voice_lint.py <file.md>` (exit 1 on any violation), together with the voice profile below.
 
@@ -240,17 +240,21 @@ Public entries only. `highlight` appears on at most `max_highlights` entries (`s
 - `editorial-v<N>.html` and `editorial-v<N>.md`
 - `post-v<N>-<platform>.md`: the post body, then a `<!-- notes -->` line, then non-post notes (media suggestion, tags, canonical advice). `post_stats.py` counts only the body.
 
+`data/extrovert/devto.json` (scripts/devto.py): `{"articles": {"<post file, repo-relative>": {id, url, published, options: {tags, series, canonical, cover}, created, updated, published_at?}}}`. The API key is never here: the OS keychain (keyring service `opencockpit`, `devto_api_key`).
+
+`data/bragdoc/nda.json` (optional, user): employer NDA terms as the user stated them. `{source, note, employers: [{employer (in employment.json), read (YYYY-MM-DD), confidentiality {covers, use, on_leaving, expires}, public_restrictions {permanent: bool, ...}, source}]}`. An employer with `permanent: true` keeps every current-employer public rule after the job ends.
+
 `meta.json` publication fields (validated for every conversation folder):
 ```json
 "published": [
-  {"platform": "medium", "url": "https://...", "title": "", "subtitle": "",
+  {"platform": "devto", "url": "https://...", "title": "", "subtitle": "",
    "published_date": "2026-10-07", "read_time_min": 4, "word_count": 812, "tags": [],
    "cover_image_suggestion": "", "excerpt": "", "canonical": true}
 ],
 "related_entries": ["e-0001"]
 ```
 - `status` **required**: `open|edited|posted`. If `posted`, `published` must be non-empty.
-- each `published` item **required**: `platform` (`medium|linkedin`; GitHub is not a post target), `url` (`https://`), `title`, `published_date` (`YYYY-MM-DD`), `read_time_min` and `word_count` (integers from `post_stats.py`, never estimated), `canonical` (boolean). Optional: `subtitle`, `tags`, `cover_image_suggestion`, `excerpt` (≤ 40 words).
+- each `published` item **required**: `platform` (`devto|medium|linkedin`; GitHub is not a post target), `url` (`https://`), `title`, `published_date` (`YYYY-MM-DD`), `read_time_min` and `word_count` (integers from `post_stats.py`, never estimated), `canonical` (boolean). Optional: `subtitle`, `tags`, `cover_image_suggestion`, `excerpt` (≤ 40 words).
 - exactly one `canonical: true` item per conversation (the platform hosting the full piece). New platforms are appended, never overwritten.
 - `related_entries` optional: bragDoc entry ids; each must exist in `entries.jsonl`.
 

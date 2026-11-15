@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""EXTROVERT profile copy: LinkedIn (headline, About, one Experience per role), Medium bio and About page, GitHub bio.
+"""EXTROVERT profile copy: LinkedIn (headline, About, one Experience per role), dev.to profile, Medium bio and About page, GitHub bio.
 Copy is written by the assistant from the public channel only; this script does all the deterministic work: the source
 material, the platform limits, the gates (limits, public disclosure lint, voice lint), versions, what's applied, and
 the staleness policy that renovate runs at its end.
@@ -12,8 +12,8 @@ the staleness policy that renovate runs at its end.
   profiles.py status                    per platform: latest version, applied version, and what's stale since
   profiles.py policy [--force]          renovate's closing check: which pieces are stale (triggers in config); at most one
                                         reminder per throttle period (14 days) unless a job/role change is among them
-Platforms: linkedin (sections: headline, about, "experience: <employer> · <role>" for every role), medium (bio, about),
-github (bio). Config: data/extrovert/config.json -> profiles. State: data/extrovert/profiles/state.json.
+Platforms: linkedin (sections: headline, about, "experience: <employer> · <role>" for every role), devto (bio, work, skills,
+"currently hacking on"), medium (bio, about), github (bio). Config: data/extrovert/config.json -> profiles. State: data/extrovert/profiles/state.json.
 COCKPIT_NOW=<ISO> overrides the clock (tests).
 """
 import datetime as dt, hashlib, json, os, re, sys
@@ -24,7 +24,7 @@ import voice_lint
 PROFILES = DATA / "extrovert/profiles"
 STATE = PROFILES / "state.json"
 CONFIG = DATA / "extrovert/config.json"
-PLATFORMS = ("linkedin", "medium", "github")
+PLATFORMS = ("linkedin", "devto", "medium", "github")
 
 def now(): return dt.datetime.fromisoformat(os.environ["COCKPIT_NOW"]) if os.environ.get("COCKPIT_NOW") else dt.datetime.now().replace(microsecond=0)
 def die(msg): print(f"BLOCKED: {msg}"); sys.exit(1)
@@ -75,7 +75,8 @@ def inputs():
     import runway
     data, ids, problems, _ = runway.build()
     if problems: die("the public site data doesn't build:\n  " + "\n  ".join(problems))
-    cur = {r["employer"] for r in current_roles()}
+    from disclosure_lint import permanent_employers
+    cur = {r["employer"] for r in current_roles()} | permanent_employers()   # an NDA can make the rule outlast the job
     names = json.loads((DATA / "profile.json").read_text(encoding="utf-8"))["names"]
     out = {"name": names.get("short"), "roles": [], "public_entries": [], "skill_groups": {}}
     for r in roles():
@@ -108,6 +109,7 @@ def parse(text):
 
 def expected_sections(platform):
     if platform == "linkedin": return ["headline", "about", *[f"experience: {role_key(r)}" for r in roles()]]
+    if platform == "devto": return ["bio", "work", "skills", "currently hacking on"]
     return ["bio", "about"] if platform == "medium" else ["bio"]
 
 def limit_for(platform, section):

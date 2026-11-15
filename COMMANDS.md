@@ -24,14 +24,16 @@
 /extrovert rename [ref] <name>  rename latest (or a specific) conversation
 /end                            end the conversation
 /extrovert editorial [ref]      side-by-side transcript vs edited, iterate
-/extrovert post [platforms]     Medium (canonical) + LinkedIn summary
+/extrovert post [platforms]     dev.to (canonical) + LinkedIn summary
 /extrovert voice [calibrate]    voice profile brief; calibrate: questionnaire + fresh sample → new version
-I posted <conv> on <platform>: <url>   record it; Medium: wait for the feed, rebuild the site, live tests
-/extrovert profiles [platform|all]   LinkedIn headline/About/Experience, Medium + GitHub bios, versioned
+I posted <conv> on <platform>: <url>   record it; the canonical post: wait for the feed, rebuild the site, live tests
+/extrovert profiles [platform|all]   LinkedIn headline/About/Experience, dev.to profile, Medium + GitHub bios, versioned
 /extrovert profiles applied <platform|all>   record what I pasted
 /extrovert profiles status       latest vs applied, what's stale
 /extrovert repos [repo]         repo metadata: GitHub description + topics, PyPI keywords + classifiers, release scheme
 /extrovert repos applied <repo>  record what I set by hand
+/extrovert post devto            draft + publish on dev.to via its API (devto.py; key: devto.py key set)
+/extrovert checklist            open checklists; "<item> done" ticks one
 
 ## bragDoc: achievements
 /bragdoc dump <text/files>      add items to staging

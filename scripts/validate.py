@@ -23,7 +23,7 @@ POLICY_FILE, PROFILE_FILE = "bragdoc/disclosure_policy.json", "profile.json"
 NAME_FORMS = ("short", "public_full", "formal")   # profile.json names; channels pick one in the disclosure policy
 VISIBILITY = {"private", "public"}
 LINK_KEYS = ("repo", "live", "landing", "demo", "docs")
-PLATFORMS = {"medium", "linkedin"}  # post targets; add more here and in the extrovert skill
+PLATFORMS = {"devto", "medium", "linkedin"}  # post targets; add more here and in the extrovert skill
 HTTPS = re.compile(r"^https://[^\s/?#]+\.[^\s]+$", re.I)
 HEX = re.compile(r"^[0-9a-f]+$")
 errors = []
@@ -187,7 +187,7 @@ def contacts_and_policy():
         if not v: continue
         if k == "phone" and not PHONE.search(v): errors.append(f"{w}: not a phone number")
         if k.startswith("email") and not EMAIL.match(v): errors.append(f"{w}: not an email address")
-        if k in ("linkedin", "github", "medium", "website") and not HTTPS.match(v): errors.append(f"{w}: must be an https URL")
+        if k in ("linkedin", "github", "medium", "devto", "website") and not HTTPS.match(v): errors.append(f"{w}: must be an https URL")
     if "public" in contacts.get("phone", {}).get("channels", []): errors.append(f"{PROFILE_FILE}: phone must never be in the public channel")
     if "public" in contacts.get("email_personal", {}).get("channels", []): errors.append(f"{PROFILE_FILE}: personal email must never be in the public channel")
     banned = [re.compile(p) for p in policy.get("terms", {}).get("always_banned", [])]
@@ -217,7 +217,9 @@ def forbidden_content():
             for rx in banned:
                 m = rx.search(text)
                 if m: errors.append(f"{rel}: contains excluded employer reference ('{m.group(0)}')")
-        m = PHONE.search(text)
+        # ids inside links (job boards, post slugs) can look like phone numbers: links are not checked
+        bare = re.sub(r"https?://[^\s\"')\]]+", " ", text)
+        m = PHONE.search(bare)
         if m: errors.append(f"{rel}: contains a phone number ('{m.group(0)}'); allowed only in profile.json contacts")
         for em in personal:
             if em in text.lower(): errors.append(f"{rel}: contains the personal email; allowed only in profile.json contacts")
@@ -551,6 +553,20 @@ def extrovert(eids):
         for iid in m.get("ideas", []):
             if iid not in idea_ids: errors.append(f"{w}: idea '{iid}' not in ideas.jsonl")
 
+def nda_record():
+    """data/bragdoc/nda.json (optional): employer NDA terms the user stated. An employer whose public restrictions are
+    permanent keeps every current-employer public rule after the job ends (disclosure_lint.restricted_employers)."""
+    nda = load_json("bragdoc/nda.json", None)
+    if nda is None: return
+    employers = {j.get("employer") for j in load_json("bragdoc/employment.json", [])}
+    if not str(nda.get("source") or "").strip(): errors.append("nda.json: source is required")
+    for i, n in enumerate(nda.get("employers", [])):
+        w = f"nda.json employers[{i}]"
+        need(n, ["employer", "read", "confidentiality", "public_restrictions", "source"], w)
+        if n.get("employer") not in employers: errors.append(f"{w}: employer '{n.get('employer')}' is not in employment.json")
+        if n.get("read") and not DATE.match(str(n["read"])): errors.append(f"{w}.read must be YYYY-MM-DD")
+        if not isinstance((n.get("public_restrictions") or {}).get("permanent"), bool): errors.append(f"{w}.public_restrictions.permanent must be true or false")
+
 def main():
     eids = set()
     try: chassis()
@@ -562,6 +578,8 @@ def main():
     try: fourthwall_data()
     except ValueError as e: errors.append(str(e))
     try: runway_data()
+    except ValueError as e: errors.append(str(e))
+    try: nda_record()
     except ValueError as e: errors.append(str(e))
     forbidden_content()
     if errors:

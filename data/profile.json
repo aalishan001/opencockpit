@@ -51,6 +51,12 @@
   "medium": {
    "value": "",
    "channels": [
+    "internal"
+   ]
+  },
+  "devto": {
+   "value": "",
+   "channels": [
     "internal",
     "resume",
     "public"

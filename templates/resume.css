@@ -8,3 +8,4 @@ h3 { font-size: 10.5pt; margin: 8pt 0 0; }
 p.contact, p.meta { margin: 0 0 4pt; color: #333; font-size: 9.5pt; }
 ul { margin: 2pt 0 4pt 14pt; padding: 0; }
 li { margin: 0 0 2pt; }
+p { margin: 0 0 3pt; }   /* body paragraphs (role context, skills lines): the browser default (1em) wastes space on a one-page resume */

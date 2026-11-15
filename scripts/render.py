@@ -8,6 +8,8 @@ channel (data/bragdoc/disclosure_policy.json) and is linted before it is written
 An all-caps name is CSS text-transform on h1.name; the text itself is never changed.
   render.py editorial <folder> <N>   -> <folder>/editorial-v<N>.html (side by side)
   render.py post <post-file.md>      -> <post-file>.html beside it: clean HTML to paste into Medium
+  render.py post <post-file.md> --devto [--tags a,b,c,d] [--canonical URL] [--series NAME]
+                                     -> beside it: <post-vN-devto>.paste.md, or <file>.devto.md for a copy of a Medium post (front matter, a draft)
 Editorials and posts are public drafts: both are blocked unless the file passes voice_lint.py (public register) and
 the public disclosure lint.
 """
@@ -24,6 +26,8 @@ esc = html.escape
 # (the default footer prints the local file path)
 BROWSERS = [r"C:\Program Files\Google\Chrome\Application\chrome.exe", r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
             "google-chrome", "chromium", "chromium-browser", "chrome", "msedge", "microsoft-edge"]
+# COCKPIT_BROWSER names a browser binary first (cloud containers ship Playwright's Chromium outside PATH)
+BROWSERS = ([os.environ["COCKPIT_BROWSER"]] if os.environ.get("COCKPIT_BROWSER") else []) + BROWSERS +            sorted(str(p) for p in pathlib.Path("/opt/pw-browsers").glob("chromium_headless_shell-*/chrome-headless-shell-linux*/chrome-headless-shell")) +            sorted(str(p) for p in pathlib.Path("/opt/pw-browsers").glob("chromium-*/chrome-linux*/chrome"))
 
 def leak_patterns():
     """Local paths and usernames that must never be inside a rendered file: the fourthwall deny list's path regexes and
@@ -42,6 +46,7 @@ def browser_pdf(html_path, pdf_path, header_footer=False):
             args = [exe, "--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check", f"--user-data-dir={profile}",
                     f"--print-to-pdf={pdf_path}"]
             if not header_footer: args += ["--no-pdf-header-footer", "--print-to-pdf-no-header"]
+            if hasattr(os, "geteuid") and os.geteuid() == 0: args += ["--no-sandbox"]   # Chromium refuses to run as root otherwise
             subprocess.run(args + [pathlib.Path(html_path).resolve().as_uri()], capture_output=True, timeout=180)
         if pathlib.Path(pdf_path).is_file() and pathlib.Path(pdf_path).stat().st_size > 0: return True
     return False
@@ -325,17 +330,72 @@ def medium_html(md):
             f"<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>{esc(title or 'Post')}</title>\n"
             f"<style>{css}</style>\n</head>\n<body>\n" + "\n".join(blocks) + "\n</body>\n</html>\n")
 
-def post(md_file):
-    """A post file -> <same folder>/<stem>.html for pasting into Medium, behind the voice and public-channel gates."""
+DEVTO_TAG = re.compile(r"^[a-z0-9]+$")
+
+def devto_md(md, tags=(), canonical=None, series=None):
+    """(post markdown, [uploads]) -> dev.to markdown: front matter (title, published: false, description from the
+    subtitle, tags, canonical_url, series, cover_image left empty) + the body. The '# ' title and the '## ' subtitle
+    right under it move into the front matter; HTML comments are dropped; fenced code is kept verbatim; an image with a
+    local path becomes a visible '[Image: ...]' placeholder to replace in dev.to's editor (dev.to hosts its images);
+    the first local image is the cover. dev.to: at most 4 tags, lowercase letters and digits only."""
+    tags = list(tags)
+    if len(tags) > 4: raise ValueError(f"dev.to allows at most 4 tags, got {len(tags)}")
+    bad = [x for x in tags if not DEVTO_TAG.match(x)]
+    if bad: raise ValueError(f"dev.to tags are lowercase letters and digits only: {bad}")
+    if canonical and not canonical.startswith("https://"): raise ValueError("canonical_url must be an https URL")
+    lines = re.sub(r"<!--.*?-->", "", md, flags=re.S).split("\n")
+    out, uploads, title, desc, fence, cover, i = [], [], "", "", False, None, 0
+    while i < len(lines):
+        ln = lines[i]
+        if ln.startswith("```"): fence = not fence; out.append(ln); i += 1; continue
+        if fence: out.append(ln); i += 1; continue
+        if not title and ln.startswith("# "):
+            title = ln[2:].strip(); i += 1
+            while i < len(lines) and not lines[i].strip(): i += 1
+            if i < len(lines) and lines[i].startswith("## "): desc = lines[i][3:].strip(); i += 1
+            continue
+        m = re.match(r"^\s*!\[([^\]]*)\]\(([^)\s]+)\)", ln)
+        if m and not re.match(r"https?://", m.group(2)):
+            name = pathlib.PurePosixPath(m.group(2)).name
+            if cover is None: cover = name; uploads.append(f"cover image: {name}"); i += 1; continue
+            uploads.append(f"inline image: {name}"); out.append(f"**[Image: {m.group(1)} (upload {name})]**"); i += 1; continue
+        out.append(ln); i += 1
+    if not title: raise ValueError("the post has no '# ' title")
+    def q(s): return '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
+    fm = ["---", f"title: {q(title)}", "published: false"]
+    if desc: fm.append(f"description: {q(desc)}")
+    if tags: fm.append("tags: " + ", ".join(tags))
+    if canonical: fm.append(f"canonical_url: {canonical}")
+    if series: fm.append(f"series: {q(series)}")
+    fm += ["cover_image:", "---", ""]
+    body = re.sub(r"\n{3,}", "\n\n", "\n".join(out)).strip("\n")
+    return "\n".join(fm) + body + "\n", uploads
+
+def post(md_file, devto=False, tags=(), canonical=None, series=None):
+    """A post file -> <same folder>/<stem>.html for pasting into Medium, or with devto a dev.to paste file (<stem>.paste.md for a
+    post-vN-devto.md, <stem>.devto.md for a copy of a Medium post),
+    behind the voice and public-channel gates."""
     import voice_lint
     p = pathlib.Path(md_file); p = p if p.is_absolute() else ROOT / p
     voice_gate(p)
+    body = voice_lint.post_body(p.read_text(encoding="utf-8"))
+    if devto:
+        try: text, uploads = devto_md(body, tags, canonical, series)
+        except ValueError as e: print(f"BLOCKED: {e}"); sys.exit(1)
+        out = p.with_name(p.stem + (".paste.md" if p.stem.endswith("-devto") else ".devto.md")); out.write_text(text, encoding="utf-8", newline="\n"); print(out)
+        for u in uploads: print(f"  upload in dev.to's editor: {u}")
+        return
     out = p.with_suffix(".html")
-    out.write_text(medium_html(voice_lint.post_body(p.read_text(encoding="utf-8"))), encoding="utf-8", newline="\n"); print(out)
+    out.write_text(medium_html(body), encoding="utf-8", newline="\n"); print(out)
+
+def post_args(a):
+    def opt(k): return a[a.index(k) + 1] if k in a and a.index(k) + 1 < len(a) else None
+    tags = [x.strip() for x in (opt("--tags") or "").split(",") if x.strip()]
+    return post(a[1], devto="--devto" in a, tags=tags, canonical=opt("--canonical"), series=opt("--series"))
 
 
 if __name__ == "__main__":
     a = sys.argv[1:]
     if not a: print(__doc__); sys.exit(1)
     {"bragdoc": lambda: bragdoc(), "resume-extensive": lambda: resume_extensive(), "public-resume": lambda: public_resume(),
-     "editorial": lambda: editorial(a[1], a[2]), "post": lambda: post(a[1])}.get(a[0], lambda: (print(__doc__), sys.exit(1)))()
+     "editorial": lambda: editorial(a[1], a[2]), "post": lambda: post_args(a)}.get(a[0], lambda: (print(__doc__), sys.exit(1)))()

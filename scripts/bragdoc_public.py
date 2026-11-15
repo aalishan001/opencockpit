@@ -23,7 +23,7 @@
 """
 import datetime as dt, hashlib, json, os, re, sys, unicodedata
 from _common import DATA, read_jsonl, write_jsonl, append_jsonl
-from disclosure_lint import check as lint_check, context as lint_context, leak_terms, report as lint_report, current_employers
+from disclosure_lint import check as lint_check, context as lint_context, leak_terms, report as lint_report, restricted_employers
 
 SUMMARY_FIELD = {"public": "public_summary", "resume": "resume_summary", "card": "site_card"}
 
@@ -97,7 +97,7 @@ def set_summary(eid, raw, channel="public"):
         sys.exit("REJECTED: " + "; ".join(problems) + (f"\n{channel} channel blocked:\n" + lint_report(found) if found else ""))
     sentences = len([x for x in re.split(r"(?<=[.!?])\s+", s["summary"].strip()) if x])
     if not 2 <= sentences <= 4: print(f"WARN: summary looks like {sentences} sentence(s) (aim for 2-4)")
-    if channel == "public" and e.get("employer") in current_employers() and (nums := absolute_numbers(" ".join(summary_lines(s)))):
+    if channel == "public" and e.get("employer") in restricted_employers() and (nums := absolute_numbers(" ".join(summary_lines(s)))):
         print(f"WARN: current-employer entry has absolute numbers {nums}: engineering figures only (no user, tenant or customer counts)")
     e[field] = {"headline": s["headline"], "summary": s["summary"], "highlights": s["highlights"],
                 "stack": s["stack"], "generated": now().isoformat(timespec="seconds"), "source_hash": source_hash(e)}
@@ -114,7 +114,7 @@ def set_card(eid, raw):
     found = lint_check([c[k] for k in CARD_KEYS], "public", lint_context(entries), leak_terms(e.get("public_constraints", [])), entry=e)
     if problems or found:
         sys.exit("REJECTED: " + "; ".join(problems) + ("\npublic channel blocked:\n" + lint_report(found) if found else ""))
-    if e.get("employer") in current_employers() and (nums := absolute_numbers(" ".join(c[k] for k in CARD_KEYS))):
+    if e.get("employer") in restricted_employers() and (nums := absolute_numbers(" ".join(c[k] for k in CARD_KEYS))):
         print(f"WARN: current-employer card has absolute numbers {nums}: engineering figures only (no user, tenant or customer counts)")
     e["site_card"] = {**{k: c[k].strip() for k in CARD_KEYS}, "generated": now().isoformat(timespec="seconds"), "source_hash": source_hash(e)}
     write_jsonl(ENTRIES, entries)
@@ -135,9 +135,10 @@ def set_visibility(eid, vis):
 # ---------------------------------------------------------------- standing visibility default
 def default_visibility(employer):
     """New entries: the standing default in data/runway/config.json -> visibility_default (the user's own rule).
-    Current employer = an open role in employment.json, so a job change re-tiers it; existing entries never flip."""
+    Current employer = an open role in employment.json, so a job change re-tiers it; existing entries never flip.
+    An employer whose NDA makes its public restrictions permanent (nda.json) stays under the current-employer rule."""
     rule = load(RUNWAY_CONFIG, {}).get("visibility_default") or {}
-    if employer and employer in current_employers(): return rule.get("current_employer", "private")
+    if employer and employer in restricted_employers(): return rule.get("current_employer", "private")
     return rule.get("new_entries", "private")
 
 def add_entry(raw):

@@ -40,10 +40,13 @@
   "/bragdoc"
  ],
  "warm_asset_regex": null,
- "medium": {
+ "posts": {
+  "platform": "devto",
+  "label": "dev.to",
   "feed": null,
   "poll_s": 120,
-  "max_s": 1800
+  "max_s": 1800,
+  "note": "feed: your blog's RSS feed, e.g. https://dev.to/feed/<username> or https://medium.com/feed/@<username>"
  },
  "commit_trailer": null,
  "repos": null,

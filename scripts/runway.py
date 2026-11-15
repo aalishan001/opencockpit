@@ -45,6 +45,7 @@ import urllib.request, pathlib
 import xml.etree.ElementTree as ET
 from _common import ROOT, DATA, read_jsonl, write_jsonl
 from disclosure_lint import (check as lint_check, context as lint_context, leak_terms, report as lint_report, current_employers,
+                             restricted_employers, permanent_employers,
                              NO_ENTRY)
 import bragdoc_public as bp
 
@@ -92,7 +93,7 @@ def impact(rank, c):
 # ---------------------------------------------------------------- build + gates
 def resolve_showcase(st, entries, c):
     """state.showcase, with each showcase intent applied once its staging item lives in a public, showable entry."""
-    cur, show, notes = current_employers(), list(st.get("showcase", [])), []
+    cur, show, notes = restricted_employers(), list(st.get("showcase", [])), []
     for it in st.get("showcase_intents", []):
         e = next((e for e in entries if it["staging_id"] in e.get("staging_ids", [])), None)
         ok = e and e.get("visibility") == "public" and e.get("employer") not in cur and e.get("site_card") and e.get("site_slug")
@@ -128,7 +129,7 @@ def contract(data, c):
 def build():
     """(data, published entry ids, problems, notes). Nothing is generated here: renovate already wrote every field."""
     c, st = cfg(), state()
-    entries, cur = read_jsonl(ENTRIES), current_employers()
+    entries, cur = read_jsonl(ENTRIES), restricted_employers()
     show, notes = resolve_showcase(st, entries, c)
     ctx, problems, out, ids = lint_context(entries), [], [], []
     for e in sorted((e for e in entries if e.get("visibility") == "public"), key=lambda e: e["id"]):
@@ -440,7 +441,7 @@ def showcase(args):
             {"staging_id": sid, "replaces": rep, "added": now().date().isoformat(), "source": "user"}]
         save_state(st); print(f"intent: {sid}" + (f" replaces {rep}" if rep else "") + " once it is renovated and public"); return 0
     if not 1 <= len(args) <= c["max_highlights"]: die(f"give 1-{c['max_highlights']} entry ids")
-    cur = current_employers()
+    cur = restricted_employers()
     for i in args:
         e = entries.get(i) or die(f"no entry {i}")
         if e.get("visibility") != "public": die(f"{i} is private")
@@ -488,7 +489,7 @@ def profile_block(c):
     prof = json.loads((DATA / "profile.json").read_text(encoding="utf-8"))["contacts"]
     site = c["site_url"].rstrip("/")
     host = urllib.parse.urlsplit((prof.get("website") or {}).get("value", "")).netloc or "Website"
-    links = " · ".join(f"[{label}]({prof[k]['value']})" for k, label in (("website", host), ("medium", "Medium"), ("linkedin", "LinkedIn"))
+    links = " · ".join(f"[{label}]({prof[k]['value']})" for k, label in (("website", host), ("devto", "dev.to"), ("medium", "Medium"), ("linkedin", "LinkedIn"))
                        if prof.get(k, {}).get("value") and "public" in prof.get(k, {}).get("channels", []))
     intro, picked = c["profile"]["intro"], profile_top(c, data, ids)
     head = [*[l + ("\\" if i < len(intro) - 1 else "") for i, l in enumerate(intro)], "", f"**Selected work** ([the full bragDoc]({site}/bragdoc))", ""]
@@ -608,7 +609,7 @@ def repos_status(r):
     return f"{len(names)} tagged '{topic}' (the site shows the first {min(len(names), mx)}, most recently pushed first): " + ", ".join(names)
 
 def rebuild_status(c, st):
-    """Lines for status: the local hook, the daily Action, production freshness, the Medium feed, the last live check."""
+    """Lines for status: the local hook, the daily Action, production freshness, the blog feed, the last live check."""
     out, hs = [], hook_state(c)[0]
     out.append({"ok": "deploy hook (local file): present and valid (never shown)",
                 "missing": f"deploy hook (local file): missing ({c['deploy_hook_file']}); /runway rebuild falls back to Actions -> Run workflow",
@@ -623,27 +624,30 @@ def rebuild_status(c, st):
         out.append(f"production last built {when(stamp)}: " + ("after" if fresh else "before") + f" the last scheduled daily rebuild ({when(sched)})"
                    + ("" if fresh else (" (GitHub schedules can lag up to ~1 h)" if late else "; the daily rebuild didn't run or failed")))
     else: out.append(f"production ({c['site_url']}): unreachable")
-    h = feed_health(c)
-    out.append({"ok": lambda: f"posts feed: ok, {h[1]} posts; latest \"{h[2]['title']}\" ({h[2]['date'][:16]})",
-                "empty": lambda: "posts feed: ok but empty (0 posts)",
-                "failing": lambda: f"posts feed: FAILING ({h[1]})",
-                "off": lambda: "posts feed: not configured"}[h[0]]())
+    h, fl = feed_health(c), (c.get("posts") or {}).get("label", "posts")
+    out.append({"ok": lambda: f"{fl} feed: ok, {h[1]} posts; latest \"{h[2]['title']}\" ({h[2]['date'][:16]})",
+                "empty": lambda: f"{fl} feed: ok but empty (0 posts)",
+                "failing": lambda: f"{fl} feed: FAILING ({h[1]})",
+                "off": lambda: f"{fl} feed: not configured"}[h[0]]())
     lc = st.get("last_live_check")
     out.append("last live check: " + ("none yet" if not lc else f"{lc['date']} after {lc['trigger']}: " +
                ("production did not redeploy in time" if not lc.get("deployed") else f"{lc.get('passed', 0)} passed, {lc.get('failed', 0)} failed")))
     return out
 
 def release_current():
-    """The user's one instruction ('release current-employer entries'): every private current-employer entry -> public."""
-    cur = current_employers(); entries = read_jsonl(ENTRIES)
-    held = [e for e in entries if e.get("employer") in cur and e.get("visibility") != "public"]
+    """The user's one instruction ('release current-employer entries'): every private current-employer entry -> public.
+    Never an employer whose NDA makes its public restrictions permanent (data/bragdoc/nda.json)."""
+    cur, perm = current_employers(), permanent_employers(); entries = read_jsonl(ENTRIES)
+    held = [e for e in entries if e.get("employer") in cur - perm and e.get("visibility") != "public"]
+    kept = sorted({e["employer"] for e in entries if e.get("employer") in cur & perm and e.get("visibility") != "public"})
+    if kept: print("Not released (NDA: public restrictions are permanent): " + ", ".join(kept))
     if not held: print("No held current-employer entries."); return 0
     for e in held: e["visibility"] = "public"
     write_jsonl(ENTRIES, entries)
     print(f"Released {len(held)}: " + ", ".join(e["id"] for e in held))
     return publish()
 
-# ---------------------------------------------------------------- rebuilds, production checks, the Medium feed
+# ---------------------------------------------------------------- rebuilds, production checks, the blog feed
 # The deploy hook URL is a secret: it is read here and POSTed, and never printed, logged or put in an error message.
 def hook_state(c):
     """('ok', url) | ('missing', None) | ('invalid', None)."""
@@ -750,9 +754,9 @@ def rebuild(wait=True, reason="manual"):
 class FeedError(Exception): pass
 
 def feed_items(c):
-    """[{title, link, date}] newest first, from the posts RSS feed (config medium.feed; any RSS feed works).
+    """[{title, link, date}] newest first, from the blog's RSS feed (config posts.feed: dev.to, Medium or any RSS feed).
     Raises FeedError when the feed can't be read."""
-    try: status, _, body = http_get(c["medium"]["feed"], timeout=20)
+    try: status, _, body = http_get(c["posts"]["feed"], timeout=20)
     except urllib.error.HTTPError as e: raise FeedError(f"HTTP {e.code}")
     except Exception as e: raise FeedError(type(getattr(e, "reason", e)).__name__)
     try: root = ET.fromstring(body)
@@ -763,27 +767,30 @@ def feed_items(c):
 
 def feed_health(c):
     """('ok', n, latest) | ('empty', 0, None) | ('failing', reason, None) | ('off', 0, None)."""
-    if not (c.get("medium") or {}).get("feed"): return "off", 0, None
+    if not (c.get("posts") or {}).get("feed"): return "off", 0, None
     try: items = feed_items(c)
     except FeedError as e: return "failing", str(e), None
     return ("ok", len(items), items[0]) if items else ("empty", 0, None)
 
-def medium_id(url):
-    """A post's id (for Medium, the hex tail of the slug) so any form of a post's URL matches its feed link."""
-    path = urllib.parse.urlsplit(url.strip()).path.rstrip("/")
-    m = re.search(r"-([0-9a-f]{8,16})$", path) or re.search(r"/p/([0-9a-f]{8,16})$", path)
-    return m.group(1) if m else path.lower()
+def post_id(url):
+    """A post's id, so any form of its URL matches the feed link: Medium's hex tail of the slug (any host form), else
+    the URL path (dev.to: /<user>/<slug>), lowercased, without query or trailing slash."""
+    u = urllib.parse.urlsplit(url.strip()); path = u.path.rstrip("/")
+    if "medium.com" in u.netloc:
+        m = re.search(r"-([0-9a-f]{8,16})$", path) or re.search(r"/p/([0-9a-f]{8,16})$", path)
+        if m: return m.group(1)
+    return path.lower()
 
 def await_post(url, wait=True, interval=None, max_s=None):
     """Poll the feed until the post appears (or the time runs out), then rebuild either way."""
-    c = cfg(); m = c["medium"]
+    c = cfg(); m = c["posts"]
     interval = interval if interval is not None else m.get("poll_s", 120)
     max_s = max_s if max_s is not None else m.get("max_s", 1800)
-    want, start, polls = medium_id(url), time.monotonic(), 0
+    want, start, polls = post_id(url), time.monotonic(), 0
     while True:
         polls += 1
         try:
-            items = feed_items(c); found, note = any(medium_id(i["link"]) == want for i in items), f"{len(items)} posts in the feed"
+            items = feed_items(c); found, note = any(post_id(i["link"]) == want for i in items), f"{len(items)} posts in the feed"
         except FeedError as e: found, note = False, f"feed failing: {e}"
         waited = int(time.monotonic() - start)
         if found:

@@ -12,6 +12,7 @@
     "linkedin",
     "github",
     "medium",
+    "devto",
     "website"
    ],
    "summary_field": null,
@@ -31,6 +32,7 @@
     "linkedin",
     "github",
     "medium",
+    "devto",
     "website"
    ],
    "summary_field": "resume_summary",
@@ -68,6 +70,7 @@
     "linkedin",
     "github",
     "medium",
+    "devto",
     "website"
    ],
    "summary_field": "public_summary",

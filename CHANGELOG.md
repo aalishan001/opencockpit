@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.3.0 (2026-11-15)
+
+- EXTROVERT on dev.to: dev.to is the default long-form platform. render.py post --devto writes a dev.to paste file with front matter (title, draft flag, description, at most 4 tags, canonical URL, series), and scripts/devto.py drafts, updates and publishes articles through the dev.to API, with the API key kept in the OS keychain and every publish behind the voice and public lints. Medium stays supported as a platform.
+- EXTROVERT profiles: a dev.to profile (bio, work, skills, currently hacking on) with its limits checked against dev.to's own validator; a contact for dev.to on every channel.
+- RUNWAY: the blog feed is a setting (config posts: platform, label, feed), so the post watcher and the status check work with dev.to, Medium or any RSS feed, and post links match in any URL form.
+- Employer NDA record (data/bragdoc/nda.json, optional): an employer whose public restrictions are permanent keeps every current-employer rule after the job ends, and release current-employer never releases its entries.
+- Checklists: /extrovert checklist keeps a multi-step move (for example repointing every profile to a new blog) open until each item is confirmed, and every EXTROVERT and RUNWAY command lists what is still open.
+- Rendering finds a headless Chromium named by COCKPIT_BROWSER or shipped by Playwright, and runs it without the sandbox when running as root.
+
 ## v0.2.6 (2026-10-26)
 
 - EXTROVERT repo metadata: /extrovert repos suggests a paste-ready GitHub description and topics for each of your public repos (the site topic included when a repo belongs on your site), PyPI keywords and classifiers for packages, a release tag and version scheme, and a one-line note for the package's own session. scripts/repos.py gathers the inputs from the public GitHub and PyPI APIs, checks GitHub's topic rules and PyPI's official classifier list, versions every suggestion and flags a repo again after a new tag, release, PyPI version or a published post that names it.

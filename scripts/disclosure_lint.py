@@ -39,6 +39,17 @@ def current_employers():
     jobs = json.loads(p.read_text(encoding="utf-8") or "[]") if p.exists() else []
     return {j["employer"] for j in jobs if j.get("employer") and j.get("end") is None}
 
+def permanent_employers():
+    """Employers whose NDA record (data/bragdoc/nda.json) makes the current-employer public restrictions permanent."""
+    p = DATA / "bragdoc/nda.json"
+    nda = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+    return {n["employer"] for n in nda.get("employers", []) if (n.get("public_restrictions") or {}).get("permanent")}
+
+def restricted_employers():
+    """Employers under the current-employer public rules: the current ones and the permanent ones, so leaving a job
+    never lifts a restriction its NDA made permanent."""
+    return current_employers() | permanent_employers()
+
 def norm(s): return re.sub(r"\s+", " ", s).strip().strip(".;:!? ").lower()
 
 def card_strings(e):
@@ -56,7 +67,7 @@ def context(entries=None):
     entries = read_jsonl(DATA / "bragdoc/entries.jsonl") if entries is None else entries
     terms = set()
     for e in entries: terms |= leak_terms(e.get("public_constraints", []))
-    cur = current_employers()
+    cur = restricted_employers()
     # public text of entries whose relative costs may appear in a whole document (no current-employer entries)
     allow = [norm(s) for e in entries if e.get("employer") not in cur for s in card_strings(e)]
     return {"policy": policy, "contacts": prof.get("contacts", {}), "constraint_terms": terms, "names": prof.get("names") or {},
@@ -103,7 +114,7 @@ def channel_contacts(channel, ctx):
     """[(field, value)] a render may show on this channel: allowed by the policy AND listed in the contact's channels."""
     allowed = ctx["policy"]["channels"][channel]["contacts"]
     contacts, out = ctx["contacts"], []
-    for k in ("phone", "email_personal", "email_domain", "linkedin", "github", "medium", "website"):
+    for k in ("phone", "email_personal", "email_domain", "linkedin", "github", "medium", "devto", "website"):
         c = contacts.get(k) or {}
         if not c.get("value") or k not in allowed or channel not in c.get("channels", []): continue
         out.append((k, c["value"]))

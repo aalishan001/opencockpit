@@ -6,7 +6,7 @@ Personal command system run inside Claude Code. Five domains, each a skill with 
 | Domain | Skill | Purpose |
 |---|---|---|
 | CHASSIS | `/chassis` | Example domain: vehicle maintenance from the owner's manual, service slips and odometer readings |
-| EXTROVERT | `/extrovert` | Interview-style conversations → edited posts (Medium canonical, LinkedIn summary), ideas backlog, profile copy |
+| EXTROVERT | `/extrovert` | Interview-style conversations → edited posts (dev.to canonical, published through its API; LinkedIn summary), ideas backlog, profile copy |
 | bragDoc | `/bragdoc` | Probed, metric-backed record of engineering work → bragDoc + extensive resume, with disclosure tiers |
 | RUNWAY | `/runway` | Ships the bragDoc's public channel to your own site repo (preview on a content branch, promote on your approval) |
 | FOURTHWALL | `/fourthwall` | Documents the system itself (journal, changelog, README, case study) and exports a public, generalized copy |
